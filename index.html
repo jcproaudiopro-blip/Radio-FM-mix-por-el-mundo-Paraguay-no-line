@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RADIO FM MIX</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  background:#000;
+  color:white;
+  text-align:center;
+}
+.logo {
+  width:220px;
+  margin-top:20px;
+}
+.titulo {
+  font-size:22px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+.live {
+  color:red;
+  animation:blink 1s infinite;
+}
+@keyframes blink {
+  50%{opacity:0.3;}
+}
+.eq {
+  display:flex;
+  justify-content:center;
+  margin:20px;
+}
+.bar {
+  width:6px;
+  height:15px;
+  margin:3px;
+  background:#00ffcc;
+  animation:sound 1s infinite;
+}
+.bar:nth-child(2){animation-delay:.2s;}
+.bar:nth-child(3){animation-delay:.4s;}
+.bar:nth-child(4){animation-delay:.6s;}
+.bar:nth-child(5){animation-delay:.8s;}
+@keyframes sound {
+  0%{height:10px;}
+  50%{height:40px;}
+  100%{height:10px;}
+}
+.play {
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  border:none;
+  font-size:35px;
+  background:#00c853;
+  color:white;
+}
+.whatsapp {
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#25d366;
+  padding:15px;
+  border-radius:50%;
+  color:white;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<img src="logo.png" class="logo">
+
+<div class="titulo">
+RADIO FM MIX POR EL MUNDO PARAGUAY ONLINE
+</div>
+
+<div class="live">🔴 EN VIVO</div>
+
+<div class="eq">
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+  <div class="bar"></div>
+</div>
+
+<div id="song">Cargando canción...</div>
+<div id="listeners">Oyentes: ...</div>
+
+<audio id="radio" autoplay>
+  <source src="https://stream.zeno.fm/2gnl1yo7ugcvv">
+</audio>
+
+<br>
+<button class="play" onclick="radio.play()">▶</button>
+
+<a class="whatsapp" href="https://wa.me/5491131715838">💬</a>
+
+<script>
+var radio = document.getElementById("radio");
+
+async function getData(){
+  try {
+    let res = await fetch("https://api.zeno.fm/mounts/metadata/subscribe/2gnl1yo7ugcvv");
+    let reader = res.body.getReader();
+
+    while(true){
+      let {value, done} = await reader.read();
+      if(done) break;
+
+      let text = new TextDecoder().decode(value);
+      let data = JSON.parse(text);
+
+      document.getElementById("song").innerText = "🎵 " + data.streamTitle;
+      document.getElementById("listeners").innerText = "👥 Oyentes: " + data.listeners;
+    }
+  } catch(e){}
+}
+getData();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>

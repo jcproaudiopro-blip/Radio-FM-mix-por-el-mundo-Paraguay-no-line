@@ -1,0 +1,23 @@
+let noticias = [
+"📰 Paraguay: sube el precio del combustible",
+"📰 Argentina: dólar hoy en alza",
+"📰 España: alerta por lluvias",
+"📰 Mundo: conflictos internacionales en aumento",
+"📰 Deportes: resultados del fútbol internacional",
+"📰 Economía: sube el dólar y el euro"
+];
+
+let i = 0;
+
+function mostrarNoticias(){
+
+document.getElementById("noticiasBox").innerHTML = `
+<div class="noticias-texto">${noticias[i]}</div>
+`;
+
+i = (i+1) % noticias.length;
+
+}
+
+mostrarNoticias();
+setInterval(mostrarNoticias,4000);

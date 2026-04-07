@@ -1,133 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RADIO FM MIX</title>
+
+<title>FM MIX PARAGUAY</title>
 
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {
-  margin:0;
-  font-family: Arial;
-  background:#000;
-  color:white;
-  text-align:center;
+body{
+margin:0;
+font-family:Arial;
+color:white;
+text-align:center;
+background:black;
 }
-.logo {
-  width:220px;
-  margin-top:20px;
+
+/* fondo */
+.bg{
+position:fixed;
+width:100%;
+height:100%;
+background:url('logo.png') center/cover no-repeat;
+filter:brightness(0.4);
+z-index:-1;
 }
-.titulo {
-  font-size:22px;
-  font-weight:bold;
-  text-transform:uppercase;
+
+/* logo */
+.logo{
+width:180px;
+margin-top:20px;
+border-radius:20px;
 }
-.live {
-  color:red;
-  animation:blink 1s infinite;
+
+/* título */
+h1{
+font-size:22px;
 }
-@keyframes blink {
-  50%{opacity:0.3;}
+
+/* botón */
+.play{
+width:100px;
+height:100px;
+border-radius:50%;
+background:white;
+color:black;
+font-size:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:20px auto;
 }
-.eq {
-  display:flex;
-  justify-content:center;
-  margin:20px;
+
+/* hora */
+.hora{
+font-size:18px;
+margin-top:10px;
 }
-.bar {
-  width:6px;
-  height:15px;
-  margin:3px;
-  background:#00ffcc;
-  animation:sound 1s infinite;
+
+/* clima */
+.clima{
+font-size:14px;
+margin-top:10px;
 }
-.bar:nth-child(2){animation-delay:.2s;}
-.bar:nth-child(3){animation-delay:.4s;}
-.bar:nth-child(4){animation-delay:.6s;}
-.bar:nth-child(5){animation-delay:.8s;}
-@keyframes sound {
-  0%{height:10px;}
-  50%{height:40px;}
-  100%{height:10px;}
+
+/* noticias */
+.noticias{
+position:fixed;
+bottom:0;
+width:100%;
+background:black;
+color:#00ff00;
+padding:10px;
+white-space:nowrap;
+overflow:hidden;
 }
-.play {
-  width:90px;
-  height:90px;
-  border-radius:50%;
-  border:none;
-  font-size:35px;
-  background:#00c853;
-  color:white;
+
+.noticias span{
+display:inline-block;
+padding-left:100%;
+animation:scroll 25s linear infinite;
 }
-.whatsapp {
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#25d366;
-  padding:15px;
-  border-radius:50%;
-  color:white;
-  text-decoration:none;
+
+@keyframes scroll{
+from{transform:translateX(0);}
+to{transform:translateX(-100%);}
+}
+
+/* botón instalar */
+.install{
+position:fixed;
+top:10px;
+right:10px;
+background:#00c853;
+color:white;
+padding:10px;
+border-radius:10px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
+<div class="bg"></div>
+
+<div class="install" id="installBtn">📲 Instalar</div>
+
 <img src="logo.png" class="logo">
 
-<div class="titulo">
-RADIO FM MIX POR EL MUNDO PARAGUAY ONLINE
+<h1>FM MIX PARAGUAY</h1>
+
+<div class="hora" id="hora"></div>
+<div class="clima" id="clima">Cargando clima...</div>
+
+<div class="play" onclick="playRadio()">▶</div>
+
+<audio id="radio" src="https://stream.zeno.fm/2gnl1yo7ugcvv"></audio>
+
+<div class="noticias">
+<span id="noticiasTexto">Cargando noticias...</span>
 </div>
-
-<div class="live">🔴 EN VIVO</div>
-
-<div class="eq">
-  <div class="bar"></div>
-  <div class="bar"></div>
-  <div class="bar"></div>
-  <div class="bar"></div>
-  <div class="bar"></div>
-</div>
-
-<div id="song">Cargando canción...</div>
-<div id="listeners">Oyentes: ...</div>
-
-<audio id="radio" autoplay>
-  <source src="https://stream.zeno.fm/2gnl1yo7ugcvv">
-</audio>
-
-<br>
-<button class="play" onclick="radio.play()">▶</button>
-
-<a class="whatsapp" href="https://wa.me/5491131715838">💬</a>
 
 <script>
-var radio = document.getElementById("radio");
 
-async function getData(){
-  try {
-    let res = await fetch("https://api.zeno.fm/mounts/metadata/subscribe/2gnl1yo7ugcvv");
-    let reader = res.body.getReader();
-
-    while(true){
-      let {value, done} = await reader.read();
-      if(done) break;
-
-      let text = new TextDecoder().decode(value);
-      let data = JSON.parse(text);
-
-      document.getElementById("song").innerText = "🎵 " + data.streamTitle;
-      document.getElementById("listeners").innerText = "👥 Oyentes: " + data.listeners;
-    }
-  } catch(e){}
+// RADIO
+function playRadio(){
+document.getElementById("radio").play();
 }
-getData();
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+// HORA
+setInterval(()=>{
+document.getElementById("hora").innerHTML =
+"🕒 " + new Date().toLocaleTimeString();
+},1000);
+
+// CLIMA ROTATIVO
+let ciudades = ["Asuncion","Buenos Aires","Madrid"];
+let i=0;
+
+async function clima(){
+try{
+let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data = await res.text();
+
+document.getElementById("clima").innerHTML =
+"🌎 " + data;
+
+i = (i+1)%3;
+
+}catch{
+document.getElementById("clima").innerHTML="Error clima";
 }
+}
+
+clima();
+setInterval(clima,10000);
+
+// NOTICIAS REALES
+async function noticias(){
+try{
+let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es-419");
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+let lista = [];
+
+items.forEach((item,index)=>{
+if(index<10){
+lista.push(item.querySelector("title").textContent);
+}
+});
+
+document.getElementById("noticiasTexto").innerHTML =
+"📰 " + lista.join(" 🔴 ");
+
+}catch{
+document.getElementById("noticiasTexto").innerHTML="Noticias no disponibles";
+}
+}
+
+noticias();
+setInterval(noticias,3600000);
+
+// INSTALAR APP
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt",(e)=>{
+e.preventDefault();
+deferredPrompt = e;
+document.getElementById("installBtn").style.display="block";
+});
+
+document.getElementById("installBtn").addEventListener("click",()=>{
+deferredPrompt.prompt();
+});
+
 </script>
 
 </body>

@@ -1,0 +1,80 @@
+let feeds = [
+{pais:"🇵🇾 PARAGUAY", url:"https://news.google.com/rss/search?q=Paraguay&hl=es-419&gl=PY&ceid=PY:es"},
+{pais:"🇦🇷 ARGENTINA", url:"https://news.google.com/rss/search?q=Argentina&hl=es-419&gl=AR&ceid=AR:es"},
+{pais:"🇪🇸 ESPAÑA", url:"https://news.google.com/rss/search?q=España&hl=es-419&gl=ES&ceid=ES:es"},
+{pais:"🌎 MUNDO", url:"https://news.google.com/rss?hl=es-419&gl=US&ceid=US:es-419"}
+];
+
+let noticiasGlobal = [];
+let index = 0;
+
+async function cargarNoticias(){
+
+noticiasGlobal = [];
+
+for(let feed of feeds){
+
+try{
+let res = await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(feed.url));
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+items.forEach((item,i)=>{
+if(i<5){
+
+let titulo = item.querySelector("title").textContent;
+let desc = item.querySelector("description").textContent;
+
+let imgMatch = desc.match(/src="(.*?)"/);
+let img = imgMatch ? imgMatch[1] : "logo.png";
+
+noticiasGlobal.push({
+pais:feed.pais,
+titulo,
+img
+});
+
+}
+});
+
+}catch(e){
+console.log("Error cargando feed", feed.pais);
+}
+
+}
+
+}
+
+function mostrarNoticias(){
+
+if(noticiasGlobal.length === 0){
+document.getElementById("noticiasBox").innerHTML = "Cargando noticias...";
+return;
+}
+
+let n = noticiasGlobal[index];
+
+document.getElementById("noticiasBox").innerHTML = `
+<img src="${n.img}">
+<div>
+<div class="pais">${n.pais}</div>
+<div class="noticias-texto">${n.titulo}</div>
+</div>
+`;
+
+index = (index + 1) % noticiasGlobal.length;
+
+}
+
+// iniciar
+cargarNoticias();
+setTimeout(()=>{
+mostrarNoticias();
+setInterval(mostrarNoticias,5000);
+},2000);
+
+// actualizar cada 1 hora
+setInterval(cargarNoticias,3600000);

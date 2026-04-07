@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 
 <style>
+
 body{
 margin:0;
 font-family:Arial;
@@ -29,167 +30,94 @@ z-index:-1;
 
 /* logo */
 .logo{
-width:170px;
+width:180px;
 margin-top:20px;
 border-radius:20px;
 }
 
-/* título */
-h1{font-size:20px}
+/* hora */
+.hora{
+font-size:28px;
+font-weight:bold;
+margin-top:10px;
+}
 
-/* botón play */
+/* clima */
+.clima{
+font-size:20px;
+margin-top:10px;
+}
+
+/* botón radio */
 .play{
-width:90px;
-height:90px;
+width:100px;
+height:100px;
 border-radius:50%;
 background:white;
 color:black;
-font-size:35px;
+font-size:40px;
 display:flex;
 align-items:center;
 justify-content:center;
 margin:20px auto;
 }
 
-/* ecualizador */
-.eq{
+/* noticias */
+.noticias-box{
+position:fixed;
+bottom:60px;
+width:100%;
+background:#000;
 display:flex;
-justify-content:center;
-gap:5px;
-margin-top:10px;
+align-items:center;
+gap:10px;
+padding:15px;
 }
 
-.eq div{
-width:5px;
-height:20px;
-background:#00ff00;
-animation:anim 1s infinite ease-in-out;
+.noticias-box img{
+width:110px;
+height:80px;
+object-fit:cover;
+border-radius:8px;
 }
 
-.eq div:nth-child(2){animation-delay:0.2s}
-.eq div:nth-child(3){animation-delay:0.4s}
-.eq div:nth-child(4){animation-delay:0.6s}
-
-@keyframes anim{
-0%,100%{height:10px}
-50%{height:30px}
+.noticias-texto{
+font-size:15px;
+text-align:left;
 }
 
-/* hora */
-.hora{margin-top:10px}
-
-/* canción */
-.song{
-font-size:14px;
-margin-top:10px;
-color:#00ffcc;
-}
-
-/* clima */
-.clima{
-font-size:14px;
-margin-top:10px;
-}
-
-/*let feeds = [
-{pais:"🇵🇾 PARAGUAY", url:"https://news.google.com/rss/search?q=Paraguay&hl=es-419&gl=PY&ceid=PY:es"},
-{pais:"🇦🇷 ARGENTINA", url:"https://news.google.com/rss/search?q=Argentina&hl=es-419&gl=AR&ceid=AR:es"},
-{pais:"🇪🇸 ESPAÑA", url:"https://news.google.com/rss/search?q=España&hl=es-419&gl=ES&ceid=ES:es"},
-{pais:"🌎 MUNDO", url:"https://news.google.com/rss?hl=es-419&gl=US&ceid=US:es-419"}
-];
-
-let noticiasGlobal = [];
-let index = 0;
-
-async function cargarNoticias(){
-
-noticiasGlobal = [];
-
-for(let feed of feeds){
-
-try{
-let res = await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(feed.url));
-let text = await res.text();
-
-let parser = new DOMParser();
-let xml = parser.parseFromString(text,"text/xml");
-let items = xml.querySelectorAll("item");
-
-items.forEach((item,i)=>{
-if(i<5){
-
-let titulo = item.querySelector("title").textContent;
-let desc = item.querySelector("description").textContent;
-
-let imgMatch = desc.match(/src="(.*?)"/);
-let img = imgMatch ? imgMatch[1] : "logo.png";
-
-noticiasGlobal.push({
-pais:feed.pais,
-titulo,
-img
-});
-
-}
-});
-
-}catch(e){
-console.log("Error cargando feed", feed.pais);
-}
-
-}
-
-}
-
-function mostrarNoticias(){
-
-if(noticiasGlobal.length === 0){
-document.getElementById("noticiasBox").innerHTML = "Cargando noticias...";
-return;
-}
-
-let n = noticiasGlobal[index];
-
-document.getElementById("noticiasBox").innerHTML = `
-<img src="${n.img}">
-<div>
-<div class="pais">${n.pais}</div>
-<div class="noticias-texto">${n.titulo}</div>
-</div>
-`;
-
-index = (index + 1) % noticiasGlobal.length;
-
-}
-
-// iniciar
-cargarNoticias();
-setTimeout(()=>{
-mostrarNoticias();
-setInterval(mostrarNoticias,5000);
-},2000);
-
-// actualizar cada 1 hora
-setInterval(cargarNoticias,3600000); noticias */
+/* ticker */
+.ticker{
 position:fixed;
 bottom:0;
 width:100%;
-background:black;
+background:#111;
 color:#00ff00;
 padding:10px;
 white-space:nowrap;
 overflow:hidden;
 }
 
-.noticias span{
+.ticker span{
 display:inline-block;
 padding-left:100%;
-animation:scroll 25s linear infinite;
+animation:scroll 20s linear infinite;
 }
 
 @keyframes scroll{
 from{transform:translateX(0);}
 to{transform:translateX(-100%);}
+}
+
+/* whatsapp */
+.whatsapp{
+position:fixed;
+right:15px;
+bottom:130px;
+background:#25d366;
+padding:15px;
+border-radius:50%;
+font-size:22px;
 }
 
 /* instalar */
@@ -203,16 +131,6 @@ border-radius:10px;
 display:none;
 }
 
-/* whatsapp */
-.whatsapp{
-position:fixed;
-bottom:70px;
-right:15px;
-background:#25d366;
-padding:12px;
-border-radius:50%;
-font-size:20px;
-}
 </style>
 </head>
 
@@ -224,27 +142,23 @@ font-size:20px;
 
 <img src="logo.png" class="logo">
 
-<h1>FM MIX PARAGUAY</h1>
-
 <div class="hora" id="hora"></div>
-
-<div class="song" id="song">🎵 Cargando...</div>
-
-<div class="clima" id="clima"></div>
+<div class="clima" id="clima">Cargando clima...</div>
 
 <div class="play" onclick="playRadio()">▶</div>
 
-<div class="eq">
-<div></div><div></div><div></div><div></div>
-</div>
-
 <audio id="radio" src="https://stream.zeno.fm/2gnl1yo7ugcvv"></audio>
 
-<div class="noticias">
-<span id="noticiasTexto">Cargando noticias...</span>
+<div class="noticias-box" id="noticiasBox">
+Cargando noticias...
 </div>
 
-<a href="https://wa.me/5491131725838" class="whatsapp">💬</a>
+<div class="ticker">
+<span id="monedas">💵 Cargando valores...</span>
+</div>
+
+<!-- ✅ WHATSAPP CORREGIDO -->
+<a href="https://wa.me/5491131715838" class="whatsapp">💬</a>
 
 <script>
 
@@ -259,62 +173,113 @@ document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// CLIMA ROTATIVO
-let ciudades=["Asuncion","Buenos Aires","Madrid"];
-let i=0;
+// CLIMA
+let ciudades = ["Asuncion","Buenos Aires","Madrid"];
+let i = 0;
 
 async function clima(){
-let res=await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
-let data=await res.text();
-document.getElementById("clima").innerHTML="🌎 "+data;
-i=(i+1)%3;
+try{
+let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data = await res.text();
+
+document.getElementById("clima").innerHTML =
+"🌤️ " + data;
+
+i = (i+1)%3;
+
+}catch{
+document.getElementById("clima").innerHTML="Error clima";
 }
+}
+
 clima();
-setInterval(clima,10000);
+setInterval(clima,3600000);
 
 // NOTICIAS
-async function noticias(){
-let res=await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
-let text=await res.text();
-let parser=new DOMParser();
-let xml=parser.parseFromString(text,"text/xml");
-let items=xml.querySelectorAll("item");
+let noticiasLista = [];
+let n = 0;
 
-let lista=[];
-items.forEach((item,index)=>{
-if(index<10){
-lista.push(item.querySelector("title").textContent);
+async function cargarNoticias(){
+
+try{
+let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+noticiasLista = [];
+
+items.forEach((item,i)=>{
+if(i<10){
+
+let titulo = item.querySelector("title").textContent;
+let desc = item.querySelector("description").textContent;
+
+let img = "logo.png";
+let match = desc.match(/src="(.*?)"/);
+if(match){ img = match[1]; }
+
+noticiasLista.push({titulo,img});
+
 }
 });
 
-document.getElementById("noticiasTexto").innerHTML=
-"📰 "+lista.join(" 🔴 ");
-}
-noticias();
-setInterval(noticias,3600000);
-
-// CANCIÓN EN VIVO (ZENO)
-async function song(){
-try{
-let res=await fetch("https://api.zeno.fm/mounts/metadata/subscribe/2gnl1yo7ugcvv");
-document.getElementById("song").innerHTML="🎵 En vivo";
 }catch{
-document.getElementById("song").innerHTML="🎵 FM MIX EN VIVO";
+console.log("error noticias");
 }
+
 }
-song();
+
+function mostrarNoticias(){
+
+if(noticiasLista.length==0){
+document.getElementById("noticiasBox").innerHTML="📰 Cargando...";
+return;
+}
+
+let item = noticiasLista[n];
+
+document.getElementById("noticiasBox").innerHTML = `
+<img src="${item.img}">
+<div class="noticias-texto">${item.titulo}</div>
+`;
+
+n = (n+1)%noticiasLista.length;
+
+}
+
+cargarNoticias();
+
+setTimeout(()=>{
+mostrarNoticias();
+setInterval(mostrarNoticias,5000);
+},3000);
+
+setInterval(cargarNoticias,3600000);
+
+// MONEDAS
+function monedas(){
+document.getElementById("monedas").innerHTML =
+"💵 USD/ARS: 1100 🔴 USD/PYG: 7300 🔵 EUR: 1200 🟢 ACTUALIZANDO...";
+}
+
+monedas();
+setInterval(monedas,60000);
 
 // INSTALAR
 let deferredPrompt;
+
 window.addEventListener("beforeinstallprompt",(e)=>{
 e.preventDefault();
-deferredPrompt=e;
+deferredPrompt = e;
 document.getElementById("installBtn").style.display="block";
 });
 
-document.getElementById("installBtn").addEventListener("click",()=>{
+document.getElementById("installBtn").onclick = ()=>{
 deferredPrompt.prompt();
-});
+};
 
 </script>
 

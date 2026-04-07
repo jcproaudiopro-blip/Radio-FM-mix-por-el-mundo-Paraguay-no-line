@@ -1,25 +1,77 @@
-let i = 0;
+let noticiasLista = [];
+let n = 0;
 
+async function cargarNoticias(){
+
+try{
+
+let res = await fetch("https://api.allorigins.win/raw?url=" + encodeURIComponent("https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es"));
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+noticiasLista = [];
+
+items.forEach((item,i)=>{
+if(i<10){
+
+let titulo = item.querySelector("title")?.textContent || "Noticias FM MIX";
+
+let desc = item.querySelector("description")?.textContent || "";
+
+let img = "logo.png";
+let match = desc.match(/src="(.*?)"/);
+
+if(match && match[1]){
+img = match[1];
+}
+
+noticiasLista.push({titulo,img});
+
+}
+});
+
+}catch(e){
+
+// 🔥 SI FALLA INTERNET → NOTICIAS FIJAS
+noticiasLista = [
+{titulo:"FM MIX EN VIVO 24/7 🎧",img:"logo.png"},
+{titulo:"Noticias Paraguay - Argentina - España",img:"logo.png"},
+{titulo:"Descargá la app y escuchanos en todo el mundo 🌎",img:"logo.png"}
+];
+
+}
+
+}
+
+// MOSTRAR
 function mostrarNoticias(){
 
-if(!window.noticiasLista || window.noticiasLista.length==0){
+if(!noticiasLista || noticiasLista.length === 0){
 document.getElementById("noticiasBox").innerHTML = "📰 Cargando noticias...";
 return;
 }
 
-let n = window.noticiasLista[i];
+let item = noticiasLista[n];
 
 document.getElementById("noticiasBox").innerHTML = `
-<img src="${n.img}">
-<div class="noticias-texto">${n.titulo}</div>
+<img src="${item.img}">
+<div class="noticias-texto">${item.titulo}</div>
 `;
 
-i = (i+1) % window.noticiasLista.length;
+n = (n+1) % noticiasLista.length;
+
 }
 
+// INICIO
 cargarNoticias();
 
 setTimeout(()=>{
 mostrarNoticias();
-setInterval(mostrarNoticias,4000);
+setInterval(mostrarNoticias,5000);
 },3000);
+
+// ACTUALIZA CADA 1 HORA
+setInterval(cargarNoticias,3600000);

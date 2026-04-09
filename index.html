@@ -23,27 +23,26 @@ position:fixed;
 width:100%;
 height:100%;
 background:url('logo.png') center/cover no-repeat;
-filter:brightness(0.3);
+filter:brightness(0.25);
 z-index:-1;
 }
 
 /* logo */
 .logo{
-width:180px;
+width:160px;
 margin-top:20px;
 border-radius:20px;
 }
 
 /* hora */
 .hora{
-font-size:28px;
-font-weight:bold;
+font-size:26px;
 margin-top:10px;
 }
 
 /* clima */
 .clima{
-font-size:18px;
+font-size:16px;
 margin-top:10px;
 }
 
@@ -59,6 +58,37 @@ font-size:16px;
 .play{background:#00ffcc;color:black;}
 .stop{background:#ff0033;color:white;}
 
+/* ecualizador */
+.eq{
+display:flex;
+justify-content:center;
+gap:5px;
+margin-top:20px;
+}
+
+.eq div{
+width:6px;
+height:20px;
+background:#00ffcc;
+animation:anim 1s infinite ease-in-out;
+}
+
+.eq div:nth-child(2){animation-delay:0.2s;}
+.eq div:nth-child(3){animation-delay:0.4s;}
+.eq div:nth-child(4){animation-delay:0.6s;}
+.eq div:nth-child(5){animation-delay:0.8s;}
+
+@keyframes anim{
+0%,100%{height:10px;}
+50%{height:40px;}
+}
+
+/* noticias */
+.noticias{
+margin:15px;
+font-size:14px;
+}
+
 /* whatsapp */
 .whatsapp{
 position:fixed;
@@ -67,7 +97,6 @@ bottom:100px;
 background:#25d366;
 padding:15px;
 border-radius:50%;
-font-size:22px;
 }
 
 /* instalar */
@@ -80,14 +109,6 @@ padding:10px;
 border-radius:10px;
 display:none;
 }
-
-/* noticias */
-.noticias{
-margin-top:20px;
-padding:10px;
-font-size:14px;
-}
-
 </style>
 </head>
 
@@ -100,16 +121,19 @@ font-size:14px;
 <img src="logo.png" class="logo">
 
 <div class="hora" id="hora"></div>
-<div class="clima" id="clima">Cargando clima...</div>
+<div class="clima" id="clima"></div>
 
 <!-- RADIO -->
-<audio id="radio" preload="auto">
-<source src="http://uk21freenew.listen2myradio.com:8973/;?type=http&nocache=2" type="audio/mpeg">
-</audio>
+<audio id="radio" preload="auto"></audio>
 
 <div>
 <button class="btn play" onclick="playRadio()">▶ ESCUCHAR</button>
 <button class="btn stop" onclick="pauseRadio()">⏸ CORTAR</button>
+</div>
+
+<!-- ECUALIZADOR -->
+<div class="eq" id="eq">
+<div></div><div></div><div></div><div></div><div></div>
 </div>
 
 <div class="noticias" id="noticias">📰 Cargando noticias...</div>
@@ -118,104 +142,92 @@ font-size:14px;
 
 <script>
 
-// RADIO
+// 🔥 STREAMS (principal + backup)
+let streams = [
+"http://uk21freenew.listen2myradio.com:8973/;?type=http&nocache=2",
+"https://stream.zeno.fm/2gnl1yo7ugcvv"
+];
+
+let current = 0;
 let radio = document.getElementById("radio");
 
+// ▶ PLAY
 function playRadio(){
+radio.src = streams[current];
 radio.play();
+document.getElementById("eq").style.display="flex";
 }
 
+// ⏸ STOP
 function pauseRadio(){
 radio.pause();
+document.getElementById("eq").style.display="none";
 }
 
-// 🔥 AUTOPLAY INTELIGENTE
-window.addEventListener("load", ()=>{
-let playPromise = radio.play();
-
-if(playPromise !== undefined){
-playPromise.catch(()=>{
-console.log("Autoplay bloqueado (normal en iPhone)");
-});
-}
-});
-
-// 🔁 RECONEXIÓN
+// 🔁 CAMBIO AUTOMÁTICO DE SERVIDOR
 radio.onerror = function(){
-setTimeout(()=>{
-radio.load();
+current = (current+1)%streams.length;
+radio.src = streams[current];
 radio.play();
-},3000);
 };
 
-// HORA
+// 🔊 AUTOPLAY
+window.addEventListener("load", ()=>{
+let p = radio.play();
+if(p !== undefined){
+p.catch(()=>{});
+}
+});
+
+// 🕒 HORA
 setInterval(()=>{
 document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌎 CLIMA
-let ciudades = ["Asuncion","Buenos Aires","Madrid","New York"];
-let i = 0;
+// 🌍 CLIMA
+let ciudades=["Asuncion","Buenos Aires","Madrid","New York"];
+let i=0;
 
 async function clima(){
-try{
 let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
 let data = await res.text();
-
-document.getElementById("clima").innerHTML = "🌍 " + data;
-
-i = (i+1)%ciudades.length;
-
-}catch{
-document.getElementById("clima").innerHTML="Error clima";
+document.getElementById("clima").innerHTML="🌍 "+data;
+i=(i+1)%ciudades.length;
 }
-}
-
 clima();
 setInterval(clima,20000);
 
 // 📰 NOTICIAS
 async function noticias(){
-try{
 let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
 let text = await res.text();
 
-let parser = new DOMParser();
-let xml = parser.parseFromString(text,"text/xml");
+let xml = new DOMParser().parseFromString(text,"text/xml");
 let items = xml.querySelectorAll("item");
 
 let html="";
-
 items.forEach((item,i)=>{
 if(i<5){
-html += "🔴 " + item.querySelector("title").textContent + "<br><br>";
+html+="🔴 "+item.querySelector("title").textContent+"<br><br>";
 }
 });
 
-document.getElementById("noticias").innerHTML = html;
-
-}catch{
-document.getElementById("noticias").innerHTML="Error noticias";
+document.getElementById("noticias").innerHTML=html;
 }
-}
-
 noticias();
 setInterval(noticias,60000);
 
-// 📲 INSTALAR APP
+// 📲 INSTALAR
 let deferredPrompt;
-
 window.addEventListener("beforeinstallprompt",(e)=>{
 e.preventDefault();
-deferredPrompt = e;
+deferredPrompt=e;
 document.getElementById("installBtn").style.display="block";
 });
 
-document.getElementById("installBtn").onclick = ()=>{
-if(deferredPrompt){
-deferredPrompt.prompt();
-}
+document.getElementById("installBtn").onclick=()=>{
+if(deferredPrompt){deferredPrompt.prompt();}
 };
 
 </script>

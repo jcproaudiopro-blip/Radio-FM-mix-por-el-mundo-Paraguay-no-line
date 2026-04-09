@@ -17,7 +17,6 @@ color:white;
 text-align:center;
 }
 
-/* fondo */
 .bg{
 position:fixed;
 width:100%;
@@ -27,27 +26,23 @@ filter:brightness(0.3);
 z-index:-1;
 }
 
-/* logo */
 .logo{
 width:180px;
 margin-top:20px;
 border-radius:20px;
 }
 
-/* hora */
 .hora{
 font-size:28px;
 font-weight:bold;
 margin-top:10px;
 }
 
-/* clima */
 .clima{
 font-size:18px;
 margin-top:10px;
 }
 
-/* botones */
 .btn{
 padding:12px 20px;
 margin:10px;
@@ -59,21 +54,18 @@ font-size:16px;
 .play{background:#00ffcc;color:black;}
 .stop{background:#ff0033;color:white;}
 
-/* noticias */
 .noticias{
 margin-top:20px;
 padding:10px;
 font-size:14px;
 }
 
-/* monedas */
 .monedas{
 margin-top:10px;
 font-size:16px;
 color:#00ff00;
 }
 
-/* whatsapp */
 .whatsapp{
 position:fixed;
 right:15px;
@@ -84,7 +76,6 @@ border-radius:50%;
 font-size:22px;
 }
 
-/* instalar */
 .install{
 position:fixed;
 top:10px;
@@ -94,7 +85,6 @@ padding:10px;
 border-radius:10px;
 display:none;
 }
-
 </style>
 </head>
 
@@ -109,15 +99,14 @@ display:none;
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
 
-<!-- 🎧 RADIO -->
-<audio id="radio" preload="auto">
-<source src="https://uk21freenew.listen2myradio.com:8973/stream" type="audio/mpeg">
-</audio>
-
-<div>
-<button class="btn play" onclick="playRadio()">▶ ESCUCHAR</button>
-<button class="btn stop" onclick="pauseRadio()">⏸ CORTAR</button>
-</div>
+<!-- 🎧 REPRODUCTOR SOLUCIONADO -->
+<iframe 
+src="https://uk21freenew.listen2myradio.com/public/fm_mix_paraguay" 
+width="100%" 
+height="120" 
+frameborder="0" 
+allow="autoplay">
+</iframe>
 
 <div class="monedas" id="monedas">💵 Cargando monedas...</div>
 
@@ -126,33 +115,6 @@ display:none;
 <a href="https://wa.me/5491131715838" class="whatsapp">💬</a>
 
 <script>
-
-// 🎧 RADIO
-let radio = document.getElementById("radio");
-
-function playRadio(){
-radio.play();
-}
-
-function pauseRadio(){
-radio.pause();
-}
-
-// 🔥 AUTOPLAY INTELIGENTE
-window.addEventListener("load", ()=>{
-let p = radio.play();
-if(p !== undefined){
-p.catch(()=>{});
-}
-});
-
-// 🔁 RECONEXIÓN
-radio.onerror = function(){
-setTimeout(()=>{
-radio.load();
-radio.play();
-},3000);
-};
 
 // 🕒 HORA
 setInterval(()=>{
@@ -182,7 +144,7 @@ document.getElementById("clima").innerHTML="Error clima";
 clima();
 setInterval(clima,20000);
 
-// 📰 NOTICIAS (FIX)
+// 📰 NOTICIAS
 async function noticias(){
 try{
 let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");

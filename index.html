@@ -1,6 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FM MIX PARAGUAY</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:black;
+color:white;
+text-align:center;
+}
+
+/* fondo */
+.bg{
+position:fixed;
+width:100%;
+height:100%;
+background:url('logo.png') center/cover no-repeat;
+filter:brightness(0.3);
+z-index:-1;
+}
+
+/* logo */
+.logo{
+width:180px;
+margin-top:20px;
+border-radius:20px;
+}
+
+/* hora */
+.hora{
+font-size:28px;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* clima */
+.clima{
+font-size:18px;
+margin-top:10px;
+}
+
+/* botones */
+.btn{
+padding:12px 20px;
+margin:10px;
+border:none;
+border-radius:20px;
+font-size:16px;
+}
+
+.play{background:#00ffcc;color:black;}
+.stop{background:#ff0033;color:white;}
+
+/* whatsapp */
+.whatsapp{
+position:fixed;
+right:15px;
+bottom:100px;
+background:#25d366;
+padding:15px;
+border-radius:50%;
+font-size:22px;
+}
+
+/* instalar */
+.install{
+position:fixed;
+top:10px;
+right:10px;
+background:#00c853;
+padding:10px;
+border-radius:10px;
+display:none;
+}
+
+/* noticias */
+.noticias{
+margin-top:20px;
+padding:10px;
+font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+
+<div class="install" id="installBtn">📲 Instalar</div>
+
+<img src="logo.png" class="logo">
+
+<div class="hora" id="hora"></div>
+<div class="clima" id="clima">Cargando clima...</div>
+
+<!-- RADIO -->
+<audio id="radio" preload="auto">
+<source src="http://uk21freenew.listen2myradio.com:8973/;?type=http&nocache=2" type="audio/mpeg">
+</audio>
+
+<div>
+<button class="btn play" onclick="playRadio()">▶ ESCUCHAR</button>
+<button class="btn stop" onclick="pauseRadio()">⏸ CORTAR</button>
+</div>
+
+<div class="noticias" id="noticias">📰 Cargando noticias...</div>
+
+<a href="https://wa.me/5491131715838" class="whatsapp">💬</a>
+
 <script>
 
-// 🎧 RADIO AUTO PLAY INTELIGENTE
+// RADIO
 let radio = document.getElementById("radio");
 
 function playRadio(){
@@ -11,18 +129,18 @@ function pauseRadio(){
 radio.pause();
 }
 
-// 🔥 INTENTA SONAR SOLO
+// 🔥 AUTOPLAY INTELIGENTE
 window.addEventListener("load", ()=>{
 let playPromise = radio.play();
 
 if(playPromise !== undefined){
 playPromise.catch(()=>{
-console.log("Autoplay bloqueado, requiere click");
+console.log("Autoplay bloqueado (normal en iPhone)");
 });
 }
 });
 
-// 🔁 RECONEXIÓN AUTOMÁTICA
+// 🔁 RECONEXIÓN
 radio.onerror = function(){
 setTimeout(()=>{
 radio.load();
@@ -30,4 +148,77 @@ radio.play();
 },3000);
 };
 
+// HORA
+setInterval(()=>{
+document.getElementById("hora").innerHTML =
+"🕒 " + new Date().toLocaleTimeString();
+},1000);
+
+// 🌎 CLIMA
+let ciudades = ["Asuncion","Buenos Aires","Madrid","New York"];
+let i = 0;
+
+async function clima(){
+try{
+let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data = await res.text();
+
+document.getElementById("clima").innerHTML = "🌍 " + data;
+
+i = (i+1)%ciudades.length;
+
+}catch{
+document.getElementById("clima").innerHTML="Error clima";
+}
+}
+
+clima();
+setInterval(clima,20000);
+
+// 📰 NOTICIAS
+async function noticias(){
+try{
+let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+let html="";
+
+items.forEach((item,i)=>{
+if(i<5){
+html += "🔴 " + item.querySelector("title").textContent + "<br><br>";
+}
+});
+
+document.getElementById("noticias").innerHTML = html;
+
+}catch{
+document.getElementById("noticias").innerHTML="Error noticias";
+}
+}
+
+noticias();
+setInterval(noticias,60000);
+
+// 📲 INSTALAR APP
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt",(e)=>{
+e.preventDefault();
+deferredPrompt = e;
+document.getElementById("installBtn").style.display="block";
+});
+
+document.getElementById("installBtn").onclick = ()=>{
+if(deferredPrompt){
+deferredPrompt.prompt();
+}
+};
+
 </script>
+
+</body>
+</html>

@@ -1,16 +1,291 @@
-<!-- 🔊 RADIO PRO -->
-<audio id="radio" autoplay preload="auto">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FM MIX PARAGUAY</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:black;
+color:white;
+text-align:center;
+}
+
+.bg{
+position:fixed;
+width:100%;
+height:100%;
+background:url('logo.png') center/cover no-repeat;
+filter:brightness(0.3);
+z-index:-1;
+}
+
+.logo{
+width:180px;
+margin-top:20px;
+border-radius:20px;
+}
+
+.hora{
+font-size:28px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.clima{
+font-size:20px;
+margin-top:10px;
+}
+
+.play{
+width:100px;
+height:100px;
+border-radius:50%;
+background:white;
+color:black;
+font-size:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:20px auto;
+}
+
+.noticias-box{
+position:fixed;
+bottom:60px;
+width:100%;
+background:#000;
+display:flex;
+align-items:center;
+gap:10px;
+padding:15px;
+}
+
+.noticias-box img{
+width:110px;
+height:80px;
+object-fit:cover;
+border-radius:8px;
+}
+
+.noticias-texto{
+font-size:15px;
+text-align:left;
+}
+
+.ticker{
+position:fixed;
+bottom:0;
+width:100%;
+background:#111;
+color:#00ff00;
+padding:10px;
+white-space:nowrap;
+overflow:hidden;
+}
+
+.ticker span{
+display:inline-block;
+padding-left:100%;
+animation:scroll 20s linear infinite;
+}
+
+@keyframes scroll{
+from{transform:translateX(0);}
+to{transform:translateX(-100%);}
+}
+
+.whatsapp{
+position:fixed;
+right:15px;
+bottom:130px;
+background:#25d366;
+padding:15px;
+border-radius:50%;
+font-size:22px;
+}
+
+.install{
+position:fixed;
+top:10px;
+right:10px;
+background:#00c853;
+padding:10px;
+border-radius:10px;
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="bg"></div>
+
+<div class="install" id="installBtn">📲 Instalar</div>
+
+<img src="logo.png" class="logo">
+
+<div class="hora" id="hora"></div>
+<div class="clima" id="clima">Cargando clima...</div>
+
+<div class="play" onclick="playRadio()">▶</div>
+
+<!-- 🔥 STREAM ACTUALIZADO -->
+<audio id="radio" preload="none">
 <source src="http://uk21freenew.listen2myradio.com:8973/;?type=http&nocache=2" type="audio/mpeg">
 </audio>
 
-<div style="margin-top:20px;">
-
-<button onclick="playRadio()" style="padding:12px 20px;border-radius:20px;background:#00ffcc;color:#000;border:none;">
-▶ ESCUCHAR
-</button>
-
-<button onclick="pauseRadio()" style="padding:12px 20px;border-radius:20px;background:#ff0033;color:#fff;border:none;">
-⏸ CORTAR
-</button>
-
+<div class="noticias-box" id="noticiasBox">
+Cargando noticias...
 </div>
+
+<div class="ticker">
+<span id="monedas">💵 Cargando valores...</span>
+</div>
+
+<a href="https://wa.me/5491131715838" class="whatsapp">💬</a>
+
+<script>
+
+// RADIO
+function playRadio(){
+let radio = document.getElementById("radio");
+radio.play();
+}
+
+// 🔥 RECONEXIÓN AUTOMÁTICA
+let radio = document.getElementById("radio");
+
+radio.onerror = function(){
+setTimeout(()=>{
+radio.load();
+radio.play();
+},3000);
+};
+
+// HORA
+setInterval(()=>{
+document.getElementById("hora").innerHTML =
+"🕒 " + new Date().toLocaleTimeString();
+},1000);
+
+// CLIMA
+let ciudades = ["Asuncion","Buenos Aires","Madrid"];
+let i = 0;
+
+async function clima(){
+try{
+let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data = await res.text();
+
+document.getElementById("clima").innerHTML =
+"🌤️ " + data;
+
+i = (i+1)%3;
+
+}catch{
+document.getElementById("clima").innerHTML="Error clima";
+}
+}
+
+clima();
+setInterval(clima,3600000);
+
+// NOTICIAS
+let noticiasLista = [];
+let n = 0;
+
+async function cargarNoticias(){
+
+try{
+let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
+
+noticiasLista = [];
+
+items.forEach((item,i)=>{
+if(i<10){
+
+let titulo = item.querySelector("title").textContent;
+let desc = item.querySelector("description").textContent;
+
+let img = "logo.png";
+let match = desc.match(/src="(.*?)"/);
+if(match){ img = match[1]; }
+
+noticiasLista.push({titulo,img});
+
+}
+});
+
+}catch{
+console.log("error noticias");
+}
+
+}
+
+function mostrarNoticias(){
+
+if(noticiasLista.length==0){
+document.getElementById("noticiasBox").innerHTML="📰 Cargando...";
+return;
+}
+
+let item = noticiasLista[n];
+
+document.getElementById("noticiasBox").innerHTML = `
+<img src="${item.img}">
+<div class="noticias-texto">${item.titulo}</div>
+`;
+
+n = (n+1)%noticiasLista.length;
+
+}
+
+cargarNoticias();
+
+setTimeout(()=>{
+mostrarNoticias();
+setInterval(mostrarNoticias,5000);
+},3000);
+
+setInterval(cargarNoticias,3600000);
+
+// MONEDAS
+function monedas(){
+document.getElementById("monedas").innerHTML =
+"💵 USD/ARS: 1100 🔴 USD/PYG: 7300 🔵 EUR: 1200 🟢 ACTUALIZANDO...";
+}
+
+monedas();
+setInterval(monedas,60000);
+
+// INSTALAR
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt",(e)=>{
+e.preventDefault();
+deferredPrompt = e;
+document.getElementById("installBtn").style.display="block";
+});
+
+document.getElementById("installBtn").onclick = ()=>{
+deferredPrompt.prompt();
+};
+
+</script>
+
+</body>
+</html>

@@ -3,89 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>FM MIX PARAGUAY</title>
+<link rel="manifest" href="manifest.json">
 
 <style>
 body{
 margin:0;
 font-family:Arial;
-background:black;
+background:linear-gradient(180deg,#000,#111);
 color:white;
 text-align:center;
 }
 
-.logo{
-width:180px;
-margin-top:20px;
-border-radius:20px;
+/* HEADER */
+.header{
+padding:20px;
+font-size:22px;
+font-weight:bold;
 }
 
-.hora{font-size:26px;margin-top:10px;}
+/* REPRODUCTOR */
+.player{
+margin-top:30px;
+}
+
+.boton{
+width:90px;
+height:90px;
+border-radius:50%;
+background:#00ffcc;
+color:black;
+font-size:30px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:20px auto;
+cursor:pointer;
+box-shadow:0 0 20px #00ffcc;
+}
+
+/* INFO */
+.hora{font-size:22px;margin-top:10px;}
 .clima{font-size:18px;margin-top:10px;}
 
-button{
-padding:12px 20px;
-margin:10px;
-border:none;
-border-radius:20px;
-font-size:16px;
-cursor:pointer;
-}
-
-.play{background:#00ffcc;color:black;}
-.stop{background:#ff0033;color:white;}
-
+/* NOTICIAS */
 .noticias{
 margin-top:20px;
 padding:10px;
 font-size:14px;
+text-align:left;
+max-width:400px;
+margin-left:auto;
+margin-right:auto;
 }
 
-.monedas{
-margin-top:10px;
-color:#00ff00;
+/* INSTALAR */
+.install{
+position:fixed;
+top:10px;
+right:10px;
+background:#00c853;
+padding:10px;
+border-radius:10px;
+display:none;
 }
 </style>
 </head>
 
 <body>
 
-<img src="logo.png" class="logo">
+<div class="install" id="installBtn">📲 Instalar</div>
+
+<div class="header">📻 FM MIX PARAGUAY EN VIVO</div>
+
+<!-- 🎧 PLAYER SIMPLE -->
+<div class="player">
+<div class="boton" onclick="toggleRadio()" id="btn">▶</div>
+</div>
+
+<audio id="radio" preload="auto">
+<source src="https://uk21freenew.listen2myradio.com/live.mp3?typeportmount=s2_8973_stream_61144961" type="audio/mpeg">
+</audio>
 
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
-
-<!-- 🎧 AUDIO -->
-<audio id="radio" controls>
-<source src="https://uk21freenew.listen2myradio.com/live.mp3" type="audio/mpeg">
-</audio>
-
-<br>
-
-<button class="play" onclick="playRadio()">▶ ESCUCHAR</button>
-<button class="stop" onclick="pauseRadio()">⏸ CORTAR</button>
-
-<div class="monedas" id="monedas"></div>
 
 <div class="noticias" id="noticias">📰 Cargando noticias...</div>
 
 <script>
 
-// 🎧 RADIO (REINTENTO REAL)
+// 🎧 RADIO CONTROL SIMPLE
 let radio = document.getElementById("radio");
+let btn = document.getElementById("btn");
+let jugando = false;
 
-function playRadio(){
+function toggleRadio(){
+if(!jugando){
 radio.play();
-}
-
-function pauseRadio(){
+btn.innerHTML="⏸";
+jugando=true;
+}else{
 radio.pause();
+btn.innerHTML="▶";
+jugando=false;
+}
 }
 
 // 🔁 RECONEXIÓN AUTOMÁTICA
 setInterval(()=>{
-if(radio.paused){
+if(jugando && radio.paused){
 radio.load();
+radio.play().catch(()=>{});
 }
 },5000);
 
@@ -95,7 +124,7 @@ document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ CLIMA
+// 🌤️ CLIMA (3 PAÍSES)
 let ciudades = ["Buenos Aires","Asuncion","Madrid"];
 let i = 0;
 
@@ -104,7 +133,8 @@ try{
 let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
 let data = await res.text();
 
-document.getElementById("clima").innerHTML = "🌍 " + data;
+document.getElementById("clima").innerHTML =
+"🌍 " + data;
 
 i = (i+1)%ciudades.length;
 
@@ -116,7 +146,7 @@ document.getElementById("clima").innerHTML="Error clima";
 clima();
 setInterval(clima,20000);
 
-// 📰 NOTICIAS (ALTERNATIVA QUE FUNCIONA)
+// 📰 NOTICIAS GLOBAL
 async function noticias(){
 try{
 let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
@@ -129,7 +159,7 @@ let items = xml.querySelectorAll("item");
 let html="";
 
 items.forEach((item,i)=>{
-if(i<5){
+if(i<6){
 let titulo = item.querySelector("title").textContent;
 html += "🔴 " + titulo + "<br><br>";
 }
@@ -145,14 +175,20 @@ document.getElementById("noticias").innerHTML="Error noticias";
 noticias();
 setInterval(noticias,60000);
 
-// 💵 MONEDAS
-function monedas(){
-document.getElementById("monedas").innerHTML =
-"💵 USD/ARS: 1100 🔴 USD/PYG: 7300 🔵 EUR: 1200 🟢";
-}
+// 📲 INSTALAR APP
+let deferredPrompt;
 
-monedas();
-setInterval(monedas,60000);
+window.addEventListener("beforeinstallprompt",(e)=>{
+e.preventDefault();
+deferredPrompt = e;
+document.getElementById("installBtn").style.display="block";
+});
+
+document.getElementById("installBtn").onclick = ()=>{
+if(deferredPrompt){
+deferredPrompt.prompt();
+}
+};
 
 </script>
 

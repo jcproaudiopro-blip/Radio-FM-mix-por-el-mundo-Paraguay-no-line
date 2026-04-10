@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM MIX PARAGUAY</title>
-<link rel="manifest" href="manifest.json">
+<title>FM MIX PARAGUAY EN VIVO</title>
 
 <style>
 body{
@@ -23,29 +22,26 @@ font-size:22px;
 font-weight:bold;
 }
 
-/* REPRODUCTOR */
-.player{
-margin-top:30px;
-}
-
+/* BOTÓN RADIO */
 .boton{
-width:90px;
-height:90px;
+width:100px;
+height:100px;
 border-radius:50%;
 background:#00ffcc;
 color:black;
-font-size:30px;
+font-size:35px;
 display:flex;
 align-items:center;
 justify-content:center;
-margin:20px auto;
+margin:30px auto;
 cursor:pointer;
-box-shadow:0 0 20px #00ffcc;
+box-shadow:0 0 25px #00ffcc;
 }
 
 /* INFO */
-.hora{font-size:22px;margin-top:10px;}
+.hora{font-size:22px;}
 .clima{font-size:18px;margin-top:10px;}
+.monedas{margin-top:10px;color:#00ff00;}
 
 /* NOTICIAS */
 .noticias{
@@ -75,12 +71,10 @@ display:none;
 
 <div class="install" id="installBtn">📲 Instalar</div>
 
-<div class="header">📻 FM MIX PARAGUAY EN VIVO</div>
+<div class="header">📻 FM MIX PARAGUAY POR EL MUNDO</div>
 
-<!-- 🎧 PLAYER SIMPLE -->
-<div class="player">
+<!-- 🎧 BOTÓN -->
 <div class="boton" onclick="toggleRadio()" id="btn">▶</div>
-</div>
 
 <audio id="radio" preload="auto">
 <source src="https://uk21freenew.listen2myradio.com/live.mp3?typeportmount=s2_8973_stream_61144961" type="audio/mpeg">
@@ -88,31 +82,32 @@ display:none;
 
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
+<div class="monedas" id="monedas">Cargando monedas...</div>
 
 <div class="noticias" id="noticias">📰 Cargando noticias...</div>
 
 <script>
 
-// 🎧 RADIO CONTROL SIMPLE
+// 🎧 RADIO
 let radio = document.getElementById("radio");
 let btn = document.getElementById("btn");
-let jugando = false;
+let activo = false;
 
 function toggleRadio(){
-if(!jugando){
-radio.play();
+if(!activo){
+radio.play().catch(()=>{});
 btn.innerHTML="⏸";
-jugando=true;
+activo=true;
 }else{
 radio.pause();
 btn.innerHTML="▶";
-jugando=false;
+activo=false;
 }
 }
 
-// 🔁 RECONEXIÓN AUTOMÁTICA
+// 🔁 RECONEXIÓN
 setInterval(()=>{
-if(jugando && radio.paused){
+if(activo && radio.paused){
 radio.load();
 radio.play().catch(()=>{});
 }
@@ -124,7 +119,7 @@ document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ CLIMA (3 PAÍSES)
+// 🌤️ CLIMA
 let ciudades = ["Buenos Aires","Asuncion","Madrid"];
 let i = 0;
 
@@ -139,41 +134,58 @@ document.getElementById("clima").innerHTML =
 i = (i+1)%ciudades.length;
 
 }catch{
-document.getElementById("clima").innerHTML="Error clima";
+document.getElementById("clima").innerHTML="⚠️ Error clima";
 }
 }
 
 clima();
 setInterval(clima,20000);
 
-// 📰 NOTICIAS GLOBAL
+// 📰 NOTICIAS (FIX REAL)
 async function noticias(){
 try{
-let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
-let text = await res.text();
+let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es");
+let data = await res.json();
 
-let parser = new DOMParser();
-let xml = parser.parseFromString(text,"text/xml");
-let items = xml.querySelectorAll("item");
+let html = "";
 
-let html="";
-
-items.forEach((item,i)=>{
-if(i<6){
-let titulo = item.querySelector("title").textContent;
-html += "🔴 " + titulo + "<br><br>";
-}
+data.items.slice(0,6).forEach(noticia=>{
+html += `<div style="margin-bottom:10px">📰 ${noticia.title}</div>`;
 });
 
 document.getElementById("noticias").innerHTML = html;
 
 }catch{
-document.getElementById("noticias").innerHTML="Error noticias";
+document.getElementById("noticias").innerHTML="⚠️ Error noticias";
 }
 }
 
 noticias();
 setInterval(noticias,60000);
+
+// 💵 MONEDAS EN VIVO
+async function monedas(){
+try{
+let res = await fetch("https://open.er-api.com/v6/latest/USD");
+let data = await res.json();
+
+let ars = data.rates.ARS;
+let pyg = data.rates.PYG;
+let eur = data.rates.EUR;
+
+document.getElementById("monedas").innerHTML = `
+💵 USD → ARS: ${ars.toFixed(2)} 🇦🇷<br>
+💵 USD → PYG: ${pyg.toFixed(2)} 🇵🇾<br>
+💶 EUR → USD: ${(1/eur).toFixed(2)} 🌍
+`;
+
+}catch{
+document.getElementById("monedas").innerHTML="⚠️ Error monedas";
+}
+}
+
+monedas();
+setInterval(monedas,60000);
 
 // 📲 INSTALAR APP
 let deferredPrompt;

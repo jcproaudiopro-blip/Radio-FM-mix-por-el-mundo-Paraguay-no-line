@@ -4,25 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM MIX PARAGUAY EN VIVO</title>
+<title>FM MIX PARAGUAY</title>
+
+<link rel="manifest" href="manifest.json">
 
 <style>
 body{
 margin:0;
 font-family:Arial;
-background:linear-gradient(180deg,#000,#111);
+background:#000;
 color:white;
 text-align:center;
 }
 
-/* HEADER */
 .header{
 padding:20px;
 font-size:22px;
 font-weight:bold;
 }
 
-/* BOTÓN RADIO */
 .boton{
 width:100px;
 height:100px;
@@ -38,23 +38,32 @@ cursor:pointer;
 box-shadow:0 0 25px #00ffcc;
 }
 
-/* INFO */
 .hora{font-size:22px;}
 .clima{font-size:18px;margin-top:10px;}
 .monedas{margin-top:10px;color:#00ff00;}
 
-/* NOTICIAS */
 .noticias{
 margin-top:20px;
 padding:10px;
 font-size:14px;
 text-align:left;
 max-width:400px;
-margin-left:auto;
-margin-right:auto;
+margin:auto;
 }
 
-/* INSTALAR */
+.diarios{
+margin-top:20px;
+display:flex;
+gap:10px;
+overflow-x:auto;
+padding:10px;
+}
+
+.diarios img{
+height:150px;
+border-radius:10px;
+}
+
 .install{
 position:fixed;
 top:10px;
@@ -63,28 +72,31 @@ background:#00c853;
 padding:10px;
 border-radius:10px;
 display:none;
+cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="install" id="installBtn">📲 Instalar</div>
+<div class="install" id="installBtn">📲 Instalar App</div>
 
-<div class="header">📻 FM MIX PARAGUAY POR EL MUNDO</div>
+<div class="header">📻 FM MIX PARAGUAY</div>
 
-<!-- 🎧 BOTÓN -->
 <div class="boton" onclick="toggleRadio()" id="btn">▶</div>
 
-<audio id="radio" preload="auto">
+<audio id="radio">
 <source src="https://uk21freenew.listen2myradio.com/live.mp3?typeportmount=s2_8973_stream_61144961" type="audio/mpeg">
 </audio>
 
 <div class="hora" id="hora"></div>
-<div class="clima" id="clima">Cargando clima...</div>
-<div class="monedas" id="monedas">Cargando monedas...</div>
+<div class="clima" id="clima"></div>
+<div class="monedas" id="monedas"></div>
 
-<div class="noticias" id="noticias">📰 Cargando noticias...</div>
+<div class="noticias" id="noticias"></div>
+
+<!-- 📰 TAPAS DIARIOS -->
+<div class="diarios" id="diarios"></div>
 
 <script>
 
@@ -95,7 +107,7 @@ let activo = false;
 
 function toggleRadio(){
 if(!activo){
-radio.play().catch(()=>{});
+radio.play();
 btn.innerHTML="⏸";
 activo=true;
 }else{
@@ -115,79 +127,62 @@ radio.play().catch(()=>{});
 
 // 🕒 HORA
 setInterval(()=>{
-document.getElementById("hora").innerHTML =
-"🕒 " + new Date().toLocaleTimeString();
+hora.innerHTML = "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
 // 🌤️ CLIMA
 let ciudades = ["Buenos Aires","Asuncion","Madrid"];
-let i = 0;
+let i=0;
 
 async function clima(){
-try{
 let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
 let data = await res.text();
-
-document.getElementById("clima").innerHTML =
-"🌍 " + data;
-
-i = (i+1)%ciudades.length;
-
-}catch{
-document.getElementById("clima").innerHTML="⚠️ Error clima";
+clima.innerHTML="🌍 "+data;
+i=(i+1)%ciudades.length;
 }
-}
-
 clima();
 setInterval(clima,20000);
 
-// 📰 NOTICIAS (FIX REAL)
+// 📰 NOTICIAS
 async function noticias(){
-try{
-let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es");
+let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
 let data = await res.json();
 
-let html = "";
-
-data.items.slice(0,6).forEach(noticia=>{
-html += `<div style="margin-bottom:10px">📰 ${noticia.title}</div>`;
+let html="";
+data.items.slice(0,5).forEach(n=>{
+html+="📰 "+n.title+"<br><br>";
 });
 
-document.getElementById("noticias").innerHTML = html;
-
-}catch{
-document.getElementById("noticias").innerHTML="⚠️ Error noticias";
+noticias.innerHTML=html;
 }
-}
-
 noticias();
 setInterval(noticias,60000);
 
-// 💵 MONEDAS EN VIVO
+// 💵 MONEDAS
 async function monedas(){
-try{
 let res = await fetch("https://open.er-api.com/v6/latest/USD");
 let data = await res.json();
 
-let ars = data.rates.ARS;
-let pyg = data.rates.PYG;
-let eur = data.rates.EUR;
-
-document.getElementById("monedas").innerHTML = `
-💵 USD → ARS: ${ars.toFixed(2)} 🇦🇷<br>
-💵 USD → PYG: ${pyg.toFixed(2)} 🇵🇾<br>
-💶 EUR → USD: ${(1/eur).toFixed(2)} 🌍
+monedas.innerHTML = `
+USD/ARS: ${data.rates.ARS.toFixed(2)} 🇦🇷<br>
+USD/PYG: ${data.rates.PYG.toFixed(2)} 🇵🇾
 `;
-
-}catch{
-document.getElementById("monedas").innerHTML="⚠️ Error monedas";
 }
-}
-
 monedas();
 setInterval(monedas,60000);
 
-// 📲 INSTALAR APP
+// 📰 TAPAS DIARIOS (SE ACTUALIZA SOLO)
+function diarios(){
+diarios.innerHTML = `
+<img src="https://www.clarin.com/rss/lo-ultimo/" onerror="this.src='https://via.placeholder.com/150'">
+<img src="https://www.lanacion.com.ar/resizer/" onerror="this.src='https://via.placeholder.com/150'">
+<img src="https://www.abc.com.py/resizer/" onerror="this.src='https://via.placeholder.com/150'">
+<img src="https://elpais.com/resizer/" onerror="this.src='https://via.placeholder.com/150'">
+`;
+}
+diarios();
+
+// 📲 INSTALAR
 let deferredPrompt;
 
 window.addEventListener("beforeinstallprompt",(e)=>{
@@ -196,7 +191,7 @@ deferredPrompt = e;
 document.getElementById("installBtn").style.display="block";
 });
 
-document.getElementById("installBtn").onclick = ()=>{
+installBtn.onclick=()=>{
 if(deferredPrompt){
 deferredPrompt.prompt();
 }

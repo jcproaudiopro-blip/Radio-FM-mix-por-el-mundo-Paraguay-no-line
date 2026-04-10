@@ -35,17 +35,28 @@ margin:30px auto;
 cursor:pointer;
 }
 
-.hora{font-size:22px;}
-.clima{font-size:18px;margin-top:10px;}
-.monedas{margin-top:10px;color:#00ff00;}
-
-.noticias{
+/* ticker noticias */
+.ticker{
 margin-top:20px;
+background:#111;
 padding:10px;
-font-size:14px;
-text-align:left;
-max-width:400px;
-margin:auto;
+overflow:hidden;
+white-space:nowrap;
+}
+
+.ticker span{
+display:inline-block;
+padding-left:100%;
+animation:scroll 20s linear infinite;
+}
+
+@keyframes scroll{
+from{transform:translateX(0);}
+to{transform:translateX(-100%);}
+}
+
+.clima, .monedas, .hora{
+margin-top:10px;
 }
 </style>
 </head>
@@ -64,7 +75,10 @@ margin:auto;
 <div class="clima" id="clima">Cargando clima...</div>
 <div class="monedas" id="monedas">Cargando monedas...</div>
 
-<div class="noticias" id="noticias">Cargando noticias...</div>
+<!-- 📰 NOTICIAS ROTATIVAS -->
+<div class="ticker">
+<span id="noticias">📰 Cargando noticias...</span>
+</div>
 
 <script>
 
@@ -76,7 +90,7 @@ const climaEl = document.getElementById("clima");
 const noticiasEl = document.getElementById("noticias");
 const monedasEl = document.getElementById("monedas");
 
-let activo = false;
+let activo=false;
 
 // 🎧 RADIO
 function toggleRadio(){
@@ -101,63 +115,73 @@ radio.play().catch(()=>{});
 
 // 🕒 HORA
 setInterval(()=>{
-horaEl.innerHTML = "🕒 " + new Date().toLocaleTimeString();
+horaEl.innerHTML="🕒 "+new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ CLIMA
-let ciudades = ["Buenos Aires","Asuncion","Madrid"];
-let i = 0;
+// 🌤️ CLIMA ROTATIVO
+let ciudades=["Buenos Aires","Asuncion","Madrid"];
+let i=0;
 
-async function cargarClima(){
+async function actualizarClima(){
 try{
-let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
-let data = await res.text();
-climaEl.innerHTML = "🌍 " + data;
-i = (i+1)%ciudades.length;
+let res=await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data=await res.text();
+climaEl.innerHTML="🌍 "+data;
+i=(i+1)%ciudades.length;
 }catch{
-climaEl.innerHTML = "Error clima";
+climaEl.innerHTML="Error clima";
 }
 }
-cargarClima();
-setInterval(cargarClima,20000);
 
-// 📰 NOTICIAS
-async function cargarNoticias(){
+actualizarClima();
+setInterval(actualizarClima,20000); // rota
+setInterval(actualizarClima,3600000); // actualiza cada hora
+
+// 📰 NOTICIAS TICKER
+async function actualizarNoticias(){
 try{
-let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
-let data = await res.json();
+let res=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
+let data=await res.json();
 
-let html="";
-data.items.slice(0,5).forEach(n=>{
-html += "📰 "+n.title+"<br><br>";
+let texto="";
+data.items.slice(0,8).forEach(n=>{
+texto += " 🔴 "+n.title+" | ";
 });
 
-noticiasEl.innerHTML = html;
+noticiasEl.innerHTML=texto;
 
 }catch{
 noticiasEl.innerHTML="Error noticias";
 }
 }
-cargarNoticias();
-setInterval(cargarNoticias,60000);
 
-// 💵 MONEDAS
-async function cargarMonedas(){
+actualizarNoticias();
+setInterval(actualizarNoticias,3600000);
+
+// 💵 MONEDAS GLOBAL
+async function actualizarMonedas(){
 try{
-let res = await fetch("https://open.er-api.com/v6/latest/USD");
-let data = await res.json();
+let res=await fetch("https://open.er-api.com/v6/latest/USD");
+let data=await res.json();
 
-monedasEl.innerHTML = `
-USD → ARS: ${data.rates.ARS.toFixed(2)}<br>
-USD → PYG: ${data.rates.PYG.toFixed(2)}
+let ars=data.rates.ARS;
+let pyg=data.rates.PYG;
+let eur=data.rates.EUR;
+
+monedasEl.innerHTML=`
+💵 USD→ARS ${ars.toFixed(2)} 🇦🇷 |
+USD→PYG ${pyg.toFixed(2)} 🇵🇾 |
+EUR→ARS ${(ars/eur).toFixed(2)} |
+ARS→PYG ${(pyg/ars).toFixed(2)}
 `;
 
 }catch{
 monedasEl.innerHTML="Error monedas";
 }
 }
-cargarMonedas();
-setInterval(cargarMonedas,60000);
+
+actualizarMonedas();
+setInterval(actualizarMonedas,3600000);
 
 </script>
 

@@ -1,23 +1,19 @@
-let noticias = [
-"📰 Paraguay: sube el precio del combustible",
-"📰 Argentina: dólar hoy en alza",
-"📰 España: alerta por lluvias",
-"📰 Mundo: conflictos internacionales en aumento",
-"📰 Deportes: resultados del fútbol internacional",
-"📰 Economía: sube el dólar y el euro"
-];
+async function noticias(){
+try{
 
-let i = 0;
+// 🔥 API NUEVA QUE FUNCIONA SIEMPRE
+let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es");
+let data = await res.json();
 
-function mostrarNoticias(){
+let html = "";
 
-document.getElementById("noticiasBox").innerHTML = `
-<div class="noticias-texto">${noticias[i]}</div>
-`;
+data.items.slice(0,6).forEach(noticia=>{
+html += "🔴 " + noticia.title + "<br><br>";
+});
 
-i = (i+1) % noticias.length;
+document.getElementById("noticias").innerHTML = html;
 
+}catch{
+document.getElementById("noticias").innerHTML="⚠️ No se pudieron cargar las noticias";
 }
-
-mostrarNoticias();
-setInterval(mostrarNoticias,4000);
+}

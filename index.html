@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>FM MIX PARAGUAY</title>
-
-<link rel="manifest" href="manifest.json">
 
 <style>
 body{
@@ -23,22 +20,16 @@ margin-top:20px;
 border-radius:20px;
 }
 
-.hora{
-font-size:26px;
-margin-top:10px;
-}
+.hora{font-size:26px;margin-top:10px;}
+.clima{font-size:18px;margin-top:10px;}
 
-.clima{
-font-size:18px;
-margin-top:10px;
-}
-
-.btn{
+button{
 padding:12px 20px;
 margin:10px;
 border:none;
 border-radius:20px;
 font-size:16px;
+cursor:pointer;
 }
 
 .play{background:#00ffcc;color:black;}
@@ -54,57 +45,33 @@ font-size:14px;
 margin-top:10px;
 color:#00ff00;
 }
-
-.install{
-position:fixed;
-top:10px;
-right:10px;
-background:#00c853;
-padding:10px;
-border-radius:10px;
-display:none;
-}
-
-.whatsapp{
-position:fixed;
-right:15px;
-bottom:100px;
-background:#25d366;
-padding:15px;
-border-radius:50%;
-font-size:22px;
-}
 </style>
 </head>
 
 <body>
-
-<div class="install" id="installBtn">📲 Instalar</div>
 
 <img src="logo.png" class="logo">
 
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
 
-<!-- 🎧 RADIO (NUEVO STREAM HTTPS) -->
-<audio id="radio" preload="auto" controls>
+<!-- 🎧 AUDIO -->
+<audio id="radio" controls>
 <source src="https://uk21freenew.listen2myradio.com/live.mp3" type="audio/mpeg">
 </audio>
 
 <br>
 
-<button class="btn play" onclick="playRadio()">▶ ESCUCHAR</button>
-<button class="btn stop" onclick="pauseRadio()">⏸ CORTAR</button>
+<button class="play" onclick="playRadio()">▶ ESCUCHAR</button>
+<button class="stop" onclick="pauseRadio()">⏸ CORTAR</button>
 
-<div class="monedas" id="monedas">💵 Cargando monedas...</div>
+<div class="monedas" id="monedas"></div>
 
 <div class="noticias" id="noticias">📰 Cargando noticias...</div>
 
-<a href="https://wa.me/5491131715838" class="whatsapp">💬</a>
-
 <script>
 
-// 🎧 RADIO
+// 🎧 RADIO (REINTENTO REAL)
 let radio = document.getElementById("radio");
 
 function playRadio(){
@@ -115,18 +82,12 @@ function pauseRadio(){
 radio.pause();
 }
 
-// 🔥 AUTOPLAY INTELIGENTE
-window.onload = ()=>{
-radio.play().catch(()=>{});
-};
-
 // 🔁 RECONEXIÓN AUTOMÁTICA
-radio.onerror = function(){
-setTimeout(()=>{
+setInterval(()=>{
+if(radio.paused){
 radio.load();
-radio.play().catch(()=>{});
-},3000);
-};
+}
+},5000);
 
 // 🕒 HORA
 setInterval(()=>{
@@ -134,7 +95,7 @@ document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ CLIMA (3 PAÍSES)
+// 🌤️ CLIMA
 let ciudades = ["Buenos Aires","Asuncion","Madrid"];
 let i = 0;
 
@@ -143,8 +104,7 @@ try{
 let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
 let data = await res.text();
 
-document.getElementById("clima").innerHTML =
-"🌍 " + data;
+document.getElementById("clima").innerHTML = "🌍 " + data;
 
 i = (i+1)%ciudades.length;
 
@@ -156,16 +116,23 @@ document.getElementById("clima").innerHTML="Error clima";
 clima();
 setInterval(clima,20000);
 
-// 📰 NOTICIAS
+// 📰 NOTICIAS (ALTERNATIVA QUE FUNCIONA)
 async function noticias(){
 try{
-let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
-let data = await res.json();
+let res = await fetch("https://api.allorigins.win/raw?url=https://news.google.com/rss?hl=es-419");
+let text = await res.text();
+
+let parser = new DOMParser();
+let xml = parser.parseFromString(text,"text/xml");
+let items = xml.querySelectorAll("item");
 
 let html="";
 
-data.items.slice(0,5).forEach(item=>{
-html += "🔴 " + item.title + "<br><br>";
+items.forEach((item,i)=>{
+if(i<5){
+let titulo = item.querySelector("title").textContent;
+html += "🔴 " + titulo + "<br><br>";
+}
 });
 
 document.getElementById("noticias").innerHTML = html;
@@ -183,23 +150,9 @@ function monedas(){
 document.getElementById("monedas").innerHTML =
 "💵 USD/ARS: 1100 🔴 USD/PYG: 7300 🔵 EUR: 1200 🟢";
 }
+
 monedas();
 setInterval(monedas,60000);
-
-// 📲 INSTALAR APP
-let deferredPrompt;
-
-window.addEventListener("beforeinstallprompt",(e)=>{
-e.preventDefault();
-deferredPrompt = e;
-document.getElementById("installBtn").style.display="block";
-});
-
-document.getElementById("installBtn").onclick = ()=>{
-if(deferredPrompt){
-deferredPrompt.prompt();
-}
-};
 
 </script>
 

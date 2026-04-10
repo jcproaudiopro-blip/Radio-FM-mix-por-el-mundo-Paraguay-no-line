@@ -17,15 +17,6 @@ color:white;
 text-align:center;
 }
 
-.bg{
-position:fixed;
-width:100%;
-height:100%;
-background:url('logo.png') center/cover no-repeat;
-filter:brightness(0.3);
-z-index:-1;
-}
-
 .logo{
 width:180px;
 margin-top:20px;
@@ -33,8 +24,7 @@ border-radius:20px;
 }
 
 .hora{
-font-size:28px;
-font-weight:bold;
+font-size:26px;
 margin-top:10px;
 }
 
@@ -62,18 +52,7 @@ font-size:14px;
 
 .monedas{
 margin-top:10px;
-font-size:16px;
 color:#00ff00;
-}
-
-.whatsapp{
-position:fixed;
-right:15px;
-bottom:100px;
-background:#25d366;
-padding:15px;
-border-radius:50%;
-font-size:22px;
 }
 
 .install{
@@ -85,12 +64,20 @@ padding:10px;
 border-radius:10px;
 display:none;
 }
+
+.whatsapp{
+position:fixed;
+right:15px;
+bottom:100px;
+background:#25d366;
+padding:15px;
+border-radius:50%;
+font-size:22px;
+}
 </style>
 </head>
 
 <body>
-
-<div class="bg"></div>
 
 <div class="install" id="installBtn">📲 Instalar</div>
 
@@ -99,14 +86,15 @@ display:none;
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
 
-<!-- 🎧 REPRODUCTOR SOLUCIONADO -->
-<iframe 
-src="https://uk21freenew.listen2myradio.com/public/fm_mix_paraguay" 
-width="100%" 
-height="120" 
-frameborder="0" 
-allow="autoplay">
-</iframe>
+<!-- 🎧 RADIO (NUEVO STREAM HTTPS) -->
+<audio id="radio" preload="auto" controls>
+<source src="https://uk21freenew.listen2myradio.com/live.mp3" type="audio/mpeg">
+</audio>
+
+<br>
+
+<button class="btn play" onclick="playRadio()">▶ ESCUCHAR</button>
+<button class="btn stop" onclick="pauseRadio()">⏸ CORTAR</button>
 
 <div class="monedas" id="monedas">💵 Cargando monedas...</div>
 
@@ -116,14 +104,38 @@ allow="autoplay">
 
 <script>
 
+// 🎧 RADIO
+let radio = document.getElementById("radio");
+
+function playRadio(){
+radio.play();
+}
+
+function pauseRadio(){
+radio.pause();
+}
+
+// 🔥 AUTOPLAY INTELIGENTE
+window.onload = ()=>{
+radio.play().catch(()=>{});
+};
+
+// 🔁 RECONEXIÓN AUTOMÁTICA
+radio.onerror = function(){
+setTimeout(()=>{
+radio.load();
+radio.play().catch(()=>{});
+},3000);
+};
+
 // 🕒 HORA
 setInterval(()=>{
 document.getElementById("hora").innerHTML =
 "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌎 CLIMA
-let ciudades = ["Asuncion","Buenos Aires","Madrid","New York"];
+// 🌤️ CLIMA (3 PAÍSES)
+let ciudades = ["Buenos Aires","Asuncion","Madrid"];
 let i = 0;
 
 async function clima(){
@@ -174,7 +186,7 @@ document.getElementById("monedas").innerHTML =
 monedas();
 setInterval(monedas,60000);
 
-// 📲 INSTALAR
+// 📲 INSTALAR APP
 let deferredPrompt;
 
 window.addEventListener("beforeinstallprompt",(e)=>{

@@ -1,19 +1,45 @@
-async function noticias(){
-try{
+const diariosEl = document.getElementById("diarios");
 
-// 🔥 API NUEVA QUE FUNCIONA SIEMPRE
-let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419&gl=AR&ceid=AR:es");
-let data = await res.json();
-
-let html = "";
-
-data.items.slice(0,6).forEach(noticia=>{
-html += "🔴 " + noticia.title + "<br><br>";
-});
-
-document.getElementById("noticias").innerHTML = html;
-
-}catch{
-document.getElementById("noticias").innerHTML="⚠️ No se pudieron cargar las noticias";
+let listaDiarios = [
+{
+nombre:"ABC Color Paraguay",
+url:"https://www.abc.com.py",
+img:"https://image.thum.io/get/width/800/https://www.abc.com.py"
+},
+{
+nombre:"Última Hora Paraguay",
+url:"https://www.ultimahora.com",
+img:"https://image.thum.io/get/width/800/https://www.ultimahora.com"
+},
+{
+nombre:"Clarín Argentina",
+url:"https://www.clarin.com",
+img:"https://image.thum.io/get/width/800/https://www.clarin.com"
+},
+{
+nombre:"El País España",
+url:"https://elpais.com",
+img:"https://image.thum.io/get/width/800/https://elpais.com"
 }
+];
+
+let index = 0;
+
+function mostrarDiario(){
+let d = listaDiarios[index];
+
+diariosEl.innerHTML = `
+<a href="${d.url}" target="_blank">
+<img src="${d.img}">
+</a>
+<p>🗞️ ${d.nombre}</p>
+`;
+
+index = (index + 1) % listaDiarios.length;
 }
+
+// mostrar primero
+mostrarDiario();
+
+// 🔁 CAMBIO CADA 10 SEGUNDOS (LENTO Y PRO)
+setInterval(mostrarDiario,10000);

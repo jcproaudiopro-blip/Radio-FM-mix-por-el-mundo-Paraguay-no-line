@@ -15,12 +15,14 @@ color:white;
 text-align:center;
 }
 
+/* header */
 .header{
 padding:20px;
 font-size:22px;
 font-weight:bold;
 }
 
+/* boton radio */
 .boton{
 width:100px;
 height:100px;
@@ -35,28 +37,31 @@ margin:30px auto;
 cursor:pointer;
 }
 
-/* ticker noticias */
-.ticker{
+/* info */
+.hora{font-size:22px;}
+.clima{font-size:18px;margin-top:10px;}
+.monedas{margin-top:10px;color:#00ff00;}
+
+/* diarios */
+.diarios{
 margin-top:20px;
-background:#111;
-padding:10px;
-overflow:hidden;
-white-space:nowrap;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
 }
 
-.ticker span{
-display:inline-block;
-padding-left:100%;
-animation:scroll 20s linear infinite;
+.diarios img{
+width:90%;
+max-width:350px;
+border-radius:12px;
+box-shadow:0 0 15px #000;
 }
 
-@keyframes scroll{
-from{transform:translateX(0);}
-to{transform:translateX(-100%);}
-}
-
-.clima, .monedas, .hora{
+.diarios p{
 margin-top:10px;
+font-size:14px;
+color:#ccc;
 }
 </style>
 </head>
@@ -75,10 +80,8 @@ margin-top:10px;
 <div class="clima" id="clima">Cargando clima...</div>
 <div class="monedas" id="monedas">Cargando monedas...</div>
 
-<!-- 📰 NOTICIAS ROTATIVAS -->
-<div class="ticker">
-<span id="noticias">📰 Cargando noticias...</span>
-</div>
+<!-- 🗞️ TAPAS DE DIARIOS -->
+<div class="diarios" id="diarios"></div>
 
 <script>
 
@@ -87,8 +90,8 @@ const radio = document.getElementById("radio");
 const btn = document.getElementById("btn");
 const horaEl = document.getElementById("hora");
 const climaEl = document.getElementById("clima");
-const noticiasEl = document.getElementById("noticias");
 const monedasEl = document.getElementById("monedas");
+const diariosEl = document.getElementById("diarios");
 
 let activo=false;
 
@@ -122,7 +125,7 @@ horaEl.innerHTML="🕒 "+new Date().toLocaleTimeString();
 let ciudades=["Buenos Aires","Asuncion","Madrid"];
 let i=0;
 
-async function actualizarClima(){
+async function clima(){
 try{
 let res=await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
 let data=await res.text();
@@ -133,33 +136,12 @@ climaEl.innerHTML="Error clima";
 }
 }
 
-actualizarClima();
-setInterval(actualizarClima,20000); // rota
-setInterval(actualizarClima,3600000); // actualiza cada hora
+clima();
+setInterval(clima,20000);
+setInterval(clima,3600000);
 
-// 📰 NOTICIAS TICKER
-async function actualizarNoticias(){
-try{
-let res=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
-let data=await res.json();
-
-let texto="";
-data.items.slice(0,8).forEach(n=>{
-texto += " 🔴 "+n.title+" | ";
-});
-
-noticiasEl.innerHTML=texto;
-
-}catch{
-noticiasEl.innerHTML="Error noticias";
-}
-}
-
-actualizarNoticias();
-setInterval(actualizarNoticias,3600000);
-
-// 💵 MONEDAS GLOBAL
-async function actualizarMonedas(){
+// 💵 MONEDAS
+async function monedas(){
 try{
 let res=await fetch("https://open.er-api.com/v6/latest/USD");
 let data=await res.json();
@@ -169,19 +151,60 @@ let pyg=data.rates.PYG;
 let eur=data.rates.EUR;
 
 monedasEl.innerHTML=`
-💵 USD→ARS ${ars.toFixed(2)} 🇦🇷 |
-USD→PYG ${pyg.toFixed(2)} 🇵🇾 |
-EUR→ARS ${(ars/eur).toFixed(2)} |
-ARS→PYG ${(pyg/ars).toFixed(2)}
+💵 USD→ARS ${ars.toFixed(2)} 🇦🇷<br>
+💵 USD→PYG ${pyg.toFixed(2)} 🇵🇾<br>
+💱 ARS→PYG ${(pyg/ars).toFixed(2)}<br>
+💶 EUR→ARS ${(ars/eur).toFixed(2)}
 `;
-
 }catch{
 monedasEl.innerHTML="Error monedas";
 }
 }
 
-actualizarMonedas();
-setInterval(actualizarMonedas,3600000);
+monedas();
+setInterval(monedas,3600000);
+
+// 🗞️ TAPAS DIARIOS (ROTACIÓN)
+let listaDiarios=[
+{
+nombre:"ABC Color Paraguay",
+url:"https://www.abc.com.py",
+img:"https://image.thum.io/get/width/800/https://www.abc.com.py"
+},
+{
+nombre:"Última Hora Paraguay",
+url:"https://www.ultimahora.com",
+img:"https://image.thum.io/get/width/800/https://www.ultimahora.com"
+},
+{
+nombre:"Clarín Argentina",
+url:"https://www.clarin.com",
+img:"https://image.thum.io/get/width/800/https://www.clarin.com"
+},
+{
+nombre:"El País España",
+url:"https://elpais.com",
+img:"https://image.thum.io/get/width/800/https://elpais.com"
+}
+];
+
+let index=0;
+
+function mostrarDiario(){
+let d=listaDiarios[index];
+
+diariosEl.innerHTML=`
+<a href="${d.url}" target="_blank">
+<img src="${d.img}">
+</a>
+<p>🗞️ ${d.nombre}</p>
+`;
+
+index=(index+1)%listaDiarios.length;
+}
+
+mostrarDiario();
+setInterval(mostrarDiario,10000);
 
 </script>
 

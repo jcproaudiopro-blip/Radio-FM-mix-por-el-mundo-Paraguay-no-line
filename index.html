@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM MIX PARAGUAY PRO</title>
-
-<link rel="manifest" href="manifest.json">
+<title>FM MIX PARAGUAY</title>
 
 <style>
 body{
@@ -15,16 +13,6 @@ font-family:Arial;
 background:linear-gradient(180deg,#000,#111);
 color:white;
 text-align:center;
-}
-
-/* fondo */
-.bg{
-position:fixed;
-width:100%;
-height:100%;
-background:url('logo.png') center/cover no-repeat;
-opacity:0.15;
-z-index:-1;
 }
 
 .header{
@@ -45,82 +33,52 @@ align-items:center;
 justify-content:center;
 margin:30px auto;
 cursor:pointer;
-box-shadow:0 0 25px #00ffcc;
 }
 
 .hora{font-size:22px;}
 .clima{font-size:18px;margin-top:10px;}
 .monedas{margin-top:10px;color:#00ff00;}
 
-.noticias, .paraguay{
+.noticias{
 margin-top:20px;
 padding:10px;
 font-size:14px;
 text-align:left;
-max-width:420px;
+max-width:400px;
 margin:auto;
-}
-
-.diarios{
-margin-top:20px;
-display:flex;
-gap:10px;
-overflow-x:auto;
-padding:10px;
-}
-
-.diarios div{
-min-width:140px;
-background:#222;
-padding:10px;
-border-radius:10px;
-font-size:12px;
-}
-
-.install{
-position:fixed;
-top:10px;
-right:10px;
-background:#00c853;
-padding:10px;
-border-radius:10px;
-display:none;
-cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="bg"></div>
-
-<div class="install" id="installBtn">📲 Instalar</div>
-
-<div class="header">📻 FM MIX PARAGUAY PRO</div>
+<div class="header">📻 FM MIX PARAGUAY EN VIVO</div>
 
 <div class="boton" onclick="toggleRadio()" id="btn">▶</div>
 
-<audio id="radio" preload="auto">
+<audio id="radio">
 <source src="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s2_11746_stream_961139605" type="audio/mpeg">
 </audio>
 
 <div class="hora" id="hora"></div>
-<div class="clima" id="clima"></div>
-<div class="monedas" id="monedas"></div>
+<div class="clima" id="clima">Cargando clima...</div>
+<div class="monedas" id="monedas">Cargando monedas...</div>
 
-<div class="noticias" id="noticias">📰 Noticias globales...</div>
-
-<div class="paraguay" id="paraguay">🇵🇾 Noticias Paraguay...</div>
-
-<div class="diarios" id="diarios"></div>
+<div class="noticias" id="noticias">Cargando noticias...</div>
 
 <script>
 
-// 🎧 RADIO
-let radio = document.getElementById("radio");
-let btn = document.getElementById("btn");
+// ELEMENTOS
+const radio = document.getElementById("radio");
+const btn = document.getElementById("btn");
+const horaEl = document.getElementById("hora");
+const climaEl = document.getElementById("clima");
+const noticiasEl = document.getElementById("noticias");
+const monedasEl = document.getElementById("monedas");
+
 let activo = false;
 
+// 🎧 RADIO
 function toggleRadio(){
 if(!activo){
 radio.play().catch(()=>{});
@@ -133,7 +91,7 @@ activo=false;
 }
 }
 
-// 🔁 reconexión
+// 🔁 RECONEXIÓN
 setInterval(()=>{
 if(activo && radio.paused){
 radio.load();
@@ -141,113 +99,65 @@ radio.play().catch(()=>{});
 }
 },5000);
 
-// 🕒 hora
+// 🕒 HORA
 setInterval(()=>{
-hora.innerHTML="🕒 "+new Date().toLocaleTimeString();
+horaEl.innerHTML = "🕒 " + new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ clima
-let ciudades=["Buenos Aires","Asuncion","Madrid"];
-let i=0;
+// 🌤️ CLIMA
+let ciudades = ["Buenos Aires","Asuncion","Madrid"];
+let i = 0;
 
-async function clima(){
-let r=await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
-clima.innerHTML="🌍 "+await r.text();
-i=(i+1)%3;
-}
-clima();
-setInterval(clima,20000);
-
-// 📰 noticias global
-async function noticias(){
-let r=await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
-let d=await r.json();
-
-let html="";
-d.items.slice(0,5).forEach(n=>{
-html+="📰 "+n.title+"<br><br>";
-});
-
-noticias.innerHTML=html;
-}
-noticias();
-setInterval(noticias,60000);
-
-// 🇵🇾 noticias Paraguay (ABC + Última Hora)
-async function py(){
+async function cargarClima(){
 try{
-let r=await fetch("https://api.allorigins.win/raw?url=https://www.ultimahora.com/rss");
-let t=await r.text();
+let res = await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data = await res.text();
+climaEl.innerHTML = "🌍 " + data;
+i = (i+1)%ciudades.length;
+}catch{
+climaEl.innerHTML = "Error clima";
+}
+}
+cargarClima();
+setInterval(cargarClima,20000);
 
-let xml=new DOMParser().parseFromString(t,"text/xml");
-let items=xml.querySelectorAll("item");
+// 📰 NOTICIAS
+async function cargarNoticias(){
+try{
+let res = await fetch("https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss?hl=es-419");
+let data = await res.json();
 
 let html="";
-
-items.forEach((it,i)=>{
-if(i<5){
-html+="🇵🇾 "+it.querySelector("title").textContent+"<br><br>";
-}
+data.items.slice(0,5).forEach(n=>{
+html += "📰 "+n.title+"<br><br>";
 });
 
-paraguay.innerHTML=html;
+noticiasEl.innerHTML = html;
 
 }catch{
-paraguay.innerHTML="Error noticias Paraguay";
+noticiasEl.innerHTML="Error noticias";
 }
 }
-py();
-setInterval(py,60000);
+cargarNoticias();
+setInterval(cargarNoticias,60000);
 
-// 💵 monedas PRO
-async function monedas(){
-let r=await fetch("https://open.er-api.com/v6/latest/USD");
-let d=await r.json();
+// 💵 MONEDAS
+async function cargarMonedas(){
+try{
+let res = await fetch("https://open.er-api.com/v6/latest/USD");
+let data = await res.json();
 
-let ars=d.rates.ARS;
-let pyg=d.rates.PYG;
-let eur=d.rates.EUR;
-
-monedas.innerHTML=`
-USD → ARS: ${ars.toFixed(2)} 🇦🇷<br>
-USD → PYG: ${pyg.toFixed(2)} 🇵🇾<br>
-ARS → PYG: ${(pyg/ars).toFixed(2)} 💱<br>
-EUR → ARS: ${(ars/eur).toFixed(2)} 💶🇦🇷<br>
-EUR → PYG: ${(pyg/eur).toFixed(2)} 💶🇵🇾
+monedasEl.innerHTML = `
+USD → ARS: ${data.rates.ARS.toFixed(2)}<br>
+USD → PYG: ${data.rates.PYG.toFixed(2)}
 `;
-}
-monedas();
-setInterval(monedas,60000);
 
-// 🗞️ tapas diarios (auto)
-function diarios(){
-diarios.innerHTML=`
-<div>🗞️ ABC Color<br>Paraguay</div>
-<div>🗞️ Última Hora<br>Paraguay</div>
-<div>🗞️ Clarín<br>Argentina</div>
-<div>🗞️ El País<br>España</div>
-`;
+}catch{
+monedasEl.innerHTML="Error monedas";
 }
-diarios();
-
-// 📲 instalar
-let deferredPrompt;
-window.addEventListener("beforeinstallprompt",(e)=>{
-e.preventDefault();
-deferredPrompt=e;
-installBtn.style.display="block";
-});
-
-installBtn.onclick=()=>{
-if(deferredPrompt){
-deferredPrompt.prompt();
 }
-};
-
-// service worker
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("sw.js");
-}
+cargarMonedas();
+setInterval(cargarMonedas,60000);
 
 </script>
 

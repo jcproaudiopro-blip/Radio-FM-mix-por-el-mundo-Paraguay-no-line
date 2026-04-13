@@ -1,7 +1,7 @@
 {
   "name": "FM Mix Paraguay",
   "short_name": "FM Mix",
-  "start_url": "/Radio-FM-mix-por-el-mundo-Paraguay/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#ff0000",

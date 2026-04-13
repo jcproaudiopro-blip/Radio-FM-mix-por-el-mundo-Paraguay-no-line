@@ -4,139 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM Mix Paraguay</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
+<title>FM MIX PARAGUAY</title>
 
 <style>
 body {
-  margin: 0;
+  margin:0;
   font-family: Arial;
-  background: black;
-  color: white;
-  text-align: center;
+  color:white;
+  text-align:center;
+  background: url('https://chat.openai.com/mnt/data/0.png') no-repeat center center fixed;
+  background-size: cover;
 }
 
-/* MENU */
-.menu {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 28px;
-  color: red;
+.overlay {
+  background: rgba(0,0,0,0.7);
+  min-height: 100vh;
+  padding: 20px;
 }
 
-/* LOGO MICROFONO */
-.logo {
-  margin-top: 60px;
-}
-
-.logo img {
-  width: 180px;
-}
-
-/* TEXTO */
 h1 {
-  color: red;
-  font-size: 28px;
   margin-top: 20px;
+  font-size: 28px;
 }
 
-/* BOTON PLAY */
 .play {
   margin: 30px auto;
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   border: 3px solid yellow;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px;
 }
 
-/* REDES */
-.redes {
-  margin-top: 40px;
-}
-
-.redes a {
-  margin: 12px;
-  font-size: 22px;
-  color: yellow;
-  text-decoration: none;
-}
-
-/* BOTONES */
 button {
-  margin: 10px;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 10px;
-  background: red;
-  color: white;
+  padding:12px 20px;
+  margin:10px;
+  border:none;
+  border-radius:10px;
+  background:red;
+  color:white;
+  font-size:16px;
 }
 
+.section {
+  margin-top:30px;
+  background: rgba(0,0,0,0.6);
+  padding:15px;
+  border-radius:10px;
+}
 </style>
+
 </head>
 
 <body>
 
-<div class="menu">☰</div>
+<div class="overlay">
 
-<div class="logo">
-<img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png">
-</div>
+<h1>📻 FM MIX PARAGUAY</h1>
 
-<h1>TU ESTACIÓN<br>DE RADIO</h1>
+<div class="play">▶</div>
 
-<div class="play" onclick="playRadio()">▶</div>
-
-<audio id="radio">
-  <source src="https://srv10.streamingradio.ar/8256/stream" type="audio/mpeg">
+<audio id="radio" autoplay>
+  <source src="https://srv10.streamingradio.ar/8256/;" type="audio/mpeg">
 </audio>
-
-<div class="redes">
-<a href="#">📘</a>
-<a href="#">📸</a>
-<a href="#">🐦</a>
-<a href="#">📱</a>
-</div>
 
 <br>
 
-<button id="btnInstalar" style="display:none;">📲 Instalar</button>
+<button onclick="instalar()">📲 Instalar</button>
 <button onclick="compartir()">🔗 Compartir</button>
 
+<div class="section">
+<h3>📰 Noticias</h3>
+<p id="noticias">Cargando noticias...</p>
+</div>
+
+<div class="section">
+<h3>💲 Cotización</h3>
+<p id="dolar">Cargando dólar...</p>
+</div>
+
+</div>
+
 <script>
-// RADIO
-function playRadio() {
-  const radio = document.getElementById("radio");
-  radio.play().catch(() => {
-    alert("Tocá de nuevo para activar el audio");
-  });
+// AUTO PLAY (forzado)
+window.onload = function() {
+  let radio = document.getElementById("radio");
+  radio.play().catch(()=>{});
 }
-
-// INSTALAR
-let deferredPrompt;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('btnInstalar').style.display = 'inline-block';
-});
-
-document.getElementById('btnInstalar').addEventListener('click', () => {
-  if (deferredPrompt) deferredPrompt.prompt();
-});
 
 // COMPARTIR
 function compartir() {
   if (navigator.share) {
     navigator.share({
-      title: 'FM Mix Paraguay',
-      text: 'Escuchá la radio en vivo',
+      title: 'FM MIX PARAGUAY',
+      text: 'Escuchá la radio en vivo 24/7',
       url: window.location.href
     });
   } else {
@@ -144,10 +108,34 @@ function compartir() {
   }
 }
 
-// SERVICE WORKER
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+// INSTALAR
+function instalar() {
+  alert("Para instalar: tocá los 3 puntos del navegador y 'Agregar a pantalla de inicio'");
 }
+
+// NOTICIAS SIMPLE (RSS)
+fetch('https://api.allorigins.win/raw?url=https://www.abc.com.py/rss/')
+.then(res => res.text())
+.then(data => {
+  let parser = new DOMParser();
+  let xml = parser.parseFromString(data, "text/xml");
+  let items = xml.querySelectorAll("item");
+  let texto = "";
+  items.forEach((el, i) => {
+    if(i < 3){
+      texto += "• " + el.querySelector("title").textContent + "<br>";
+    }
+  });
+  document.getElementById("noticias").innerHTML = texto;
+});
+
+// DOLAR SIMPLE
+fetch('https://api.exchangerate-api.com/v4/latest/USD')
+.then(res => res.json())
+.then(data => {
+  document.getElementById("dolar").innerHTML = 
+    "USD → ARS: " + data.rates.ARS + "<br>USD → PYG: " + data.rates.PYG;
+});
 </script>
 
 </body>

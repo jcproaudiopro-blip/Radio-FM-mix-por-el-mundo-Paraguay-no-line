@@ -12,39 +12,27 @@
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: black;
   color: white;
   text-align: center;
 }
 
-/* MENU */
-.menu {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 25px;
-  cursor: pointer;
+header {
+  background: red;
+  padding: 15px;
+  font-size: 20px;
 }
 
-/* CONTENIDO */
-.container {
-  margin-top: 80px;
+iframe {
+  width: 100%;
+  height: 300px;
+  border: none;
 }
 
-img {
-  width: 150px;
-  margin-bottom: 20px;
-}
-
-h1 {
-  color: red;
-  font-size: 28px;
-}
-
-/* BOTON PLAY */
+/* BOTÓN PLAY */
 .play {
-  margin: 30px auto;
+  margin: 20px auto;
   width: 70px;
   height: 70px;
   border-radius: 50%;
@@ -55,60 +43,45 @@ h1 {
   font-size: 30px;
 }
 
-/* REDES */
-.redes {
-  margin-top: 30px;
-}
-
-.redes span {
-  margin: 10px;
-  font-size: 22px;
-}
-
-/* BOTONES */
 button {
   margin: 10px;
-  padding: 12px 20px;
+  padding: 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: red;
   color: white;
-  font-size: 16px;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="menu">☰</div>
+<header>📻 FM MIX PARAGUAY 24/7</header>
 
-<div class="container">
+<h3>Escuchanos en vivo 🔥</h3>
 
-<img src="https://cdn-icons-png.flaticon.com/512/727/727245.png">
-
-<h1>TU ESTACIÓN<br>DE RADIO</h1>
-
+<!-- PLAYER DIRECTO -->
 <div class="play" onclick="playRadio()">▶</div>
 
-<audio id="radio" src="https://srv10.streamingradio.ar/8256/;" preload="none"></audio>
+<audio id="radio" preload="none">
+  <source src="https://srv10.streamingradio.ar/8256/stream" type="audio/mpeg">
+</audio>
 
-<div class="redes">
-  <span>📘</span>
-  <span>📸</span>
-  <span>🐦</span>
-  <span>📱</span>
-</div>
+<!-- TU WEB ORIGINAL (NOTICIAS, ETC) -->
+<iframe src="https://radiofmmixparaguayenvivo.blogspot.com/2026/04/radio-fm-mix-paraguay-247.html"></iframe>
+
+<br>
 
 <button id="btnInstalar" style="display:none;">📲 Instalar App</button>
 <button onclick="compartir()">🔗 Compartir</button>
 
-</div>
-
 <script>
-// RADIO
+// AUDIO
 function playRadio() {
-  document.getElementById("radio").play();
+  const radio = document.getElementById("radio");
+  radio.play().catch(() => {
+    alert("Tocá de nuevo para activar el audio");
+  });
 }
 
 // INSTALAR
@@ -117,13 +90,11 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById("btnInstalar").style.display = 'inline-block';
+  document.getElementById('btnInstalar').style.display = 'inline-block';
 });
 
-document.getElementById("btnInstalar").addEventListener('click', () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-  }
+document.getElementById('btnInstalar').addEventListener('click', () => {
+  if (deferredPrompt) deferredPrompt.prompt();
 });
 
 // COMPARTIR
@@ -135,7 +106,7 @@ function compartir() {
       url: window.location.href
     });
   } else {
-    alert("Copiá este link y compartilo: " + window.location.href);
+    alert("Copiá este link: " + window.location.href);
   }
 }
 

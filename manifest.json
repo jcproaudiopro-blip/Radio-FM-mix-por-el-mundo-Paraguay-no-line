@@ -1,20 +1,20 @@
 {
-"name": "FM MIX PARAGUAY",
-"short_name": "FM MIX",
-"start_url": "/Radio-FM-mix-por-el-mundo-Paraguay/index.html",
-"display": "standalone",
-"background_color": "#000000",
-"theme_color": "#00ffcc",
-"icons": [
-{
-"src": "logo.png",
-"sizes": "192x192",
-"type": "image/png"
-},
-{
-"src": "logo.png",
-"sizes": "512x512",
-"type": "image/png"
-}
-]
+  "name": "FM Mix Paraguay",
+  "short_name": "FM Mix",
+  "start_url": "/Radio-FM-mix-por-el-mundo-Paraguay/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff0000",
+  "icons": [
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

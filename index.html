@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM MIX PARAGUAY</title>
+<title>FM MIX PARAGUAY PRO</title>
 
 <style>
 body{
@@ -15,26 +15,25 @@ color:white;
 text-align:center;
 }
 
-/* header */
 .header{
 padding:20px;
-font-size:22px;
+font-size:24px;
 font-weight:bold;
 }
 
-/* boton radio */
 .boton{
-width:100px;
-height:100px;
+width:110px;
+height:110px;
 border-radius:50%;
 background:#00ffcc;
 color:black;
-font-size:35px;
+font-size:40px;
 display:flex;
 align-items:center;
 justify-content:center;
-margin:30px auto;
+margin:25px auto;
 cursor:pointer;
+box-shadow:0 0 25px #00ffcc;
 }
 
 /* info */
@@ -44,18 +43,17 @@ cursor:pointer;
 
 /* diarios */
 .diarios{
-margin-top:20px;
+margin-top:25px;
 display:flex;
-justify-content:center;
-align-items:center;
 flex-direction:column;
+align-items:center;
 }
 
 .diarios img{
-width:90%;
-max-width:350px;
-border-radius:12px;
-box-shadow:0 0 15px #000;
+width:92%;
+max-width:360px;
+border-radius:15px;
+box-shadow:0 0 20px #000;
 }
 
 .diarios p{
@@ -72,26 +70,25 @@ color:#ccc;
 
 <div class="boton" onclick="toggleRadio()" id="btn">▶</div>
 
-<audio id="radio">
-<source src="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s2_11746_stream_961139605" type="audio/mpeg">
+<audio id="radio" preload="auto">
+<source src="https://srv10.streamingradio.ar/8256/;" type="audio/mpeg">
 </audio>
 
 <div class="hora" id="hora"></div>
 <div class="clima" id="clima">Cargando clima...</div>
 <div class="monedas" id="monedas">Cargando monedas...</div>
 
-<!-- 🗞️ TAPAS DE DIARIOS -->
 <div class="diarios" id="diarios"></div>
 
 <script>
 
 // ELEMENTOS
-const radio = document.getElementById("radio");
-const btn = document.getElementById("btn");
-const horaEl = document.getElementById("hora");
-const climaEl = document.getElementById("clima");
-const monedasEl = document.getElementById("monedas");
-const diariosEl = document.getElementById("diarios");
+const radio=document.getElementById("radio");
+const btn=document.getElementById("btn");
+const horaEl=document.getElementById("hora");
+const climaEl=document.getElementById("clima");
+const monedasEl=document.getElementById("monedas");
+const diariosEl=document.getElementById("diarios");
 
 let activo=false;
 
@@ -108,7 +105,7 @@ activo=false;
 }
 }
 
-// 🔁 RECONEXIÓN
+// 🔁 RECONEXIÓN AUTOMÁTICA
 setInterval(()=>{
 if(activo && radio.paused){
 radio.load();
@@ -121,7 +118,7 @@ setInterval(()=>{
 horaEl.innerHTML="🕒 "+new Date().toLocaleTimeString();
 },1000);
 
-// 🌤️ CLIMA ROTATIVO
+// 🌤️ CLIMA
 let ciudades=["Buenos Aires","Asuncion","Madrid"];
 let i=0;
 
@@ -135,10 +132,8 @@ i=(i+1)%ciudades.length;
 climaEl.innerHTML="Error clima";
 }
 }
-
 clima();
 setInterval(clima,20000);
-setInterval(clima,3600000);
 
 // 💵 MONEDAS
 async function monedas(){
@@ -160,11 +155,10 @@ monedasEl.innerHTML=`
 monedasEl.innerHTML="Error monedas";
 }
 }
-
 monedas();
 setInterval(monedas,3600000);
 
-// 🗞️ TAPAS DIARIOS (ROTACIÓN)
+// 🗞️ TAPAS DIARIOS
 let listaDiarios=[
 {
 nombre:"ABC Color Paraguay",

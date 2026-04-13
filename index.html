@@ -7,12 +7,12 @@
 <title>FM Mix Paraguay</title>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff0000">
+<meta name="theme-color" content="#000000">
 
 <style>
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: black;
   color: white;
   text-align: center;
@@ -23,30 +23,31 @@ body {
   position: absolute;
   top: 20px;
   left: 20px;
-  font-size: 25px;
-  cursor: pointer;
+  font-size: 28px;
+  color: red;
 }
 
-/* CONTENIDO */
-.container {
-  margin-top: 80px;
+/* LOGO MICROFONO */
+.logo {
+  margin-top: 60px;
 }
 
-img {
-  width: 150px;
-  margin-bottom: 20px;
+.logo img {
+  width: 180px;
 }
 
+/* TEXTO */
 h1 {
   color: red;
   font-size: 28px;
+  margin-top: 20px;
 }
 
 /* BOTON PLAY */
 .play {
   margin: 30px auto;
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   border: 3px solid yellow;
   display: flex;
@@ -57,58 +58,64 @@ h1 {
 
 /* REDES */
 .redes {
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
-.redes span {
-  margin: 10px;
+.redes a {
+  margin: 12px;
   font-size: 22px;
+  color: yellow;
+  text-decoration: none;
 }
 
 /* BOTONES */
 button {
   margin: 10px;
-  padding: 12px 20px;
+  padding: 12px 18px;
   border: none;
   border-radius: 10px;
   background: red;
   color: white;
-  font-size: 16px;
 }
-</style>
 
+</style>
 </head>
 
 <body>
 
 <div class="menu">☰</div>
 
-<div class="container">
-
-<img src="https://cdn-icons-png.flaticon.com/512/727/727245.png">
+<div class="logo">
+<img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png">
+</div>
 
 <h1>TU ESTACIÓN<br>DE RADIO</h1>
 
 <div class="play" onclick="playRadio()">▶</div>
 
-<audio id="radio" src="https://srv10.streamingradio.ar/8256/;" preload="none"></audio>
+<audio id="radio">
+  <source src="https://srv10.streamingradio.ar/8256/stream" type="audio/mpeg">
+</audio>
 
 <div class="redes">
-  <span>📘</span>
-  <span>📸</span>
-  <span>🐦</span>
-  <span>📱</span>
+<a href="#">📘</a>
+<a href="#">📸</a>
+<a href="#">🐦</a>
+<a href="#">📱</a>
 </div>
 
-<button id="btnInstalar" style="display:none;">📲 Instalar App</button>
+<br>
+
+<button id="btnInstalar" style="display:none;">📲 Instalar</button>
 <button onclick="compartir()">🔗 Compartir</button>
-
-</div>
 
 <script>
 // RADIO
 function playRadio() {
-  document.getElementById("radio").play();
+  const radio = document.getElementById("radio");
+  radio.play().catch(() => {
+    alert("Tocá de nuevo para activar el audio");
+  });
 }
 
 // INSTALAR
@@ -117,13 +124,11 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById("btnInstalar").style.display = 'inline-block';
+  document.getElementById('btnInstalar').style.display = 'inline-block';
 });
 
-document.getElementById("btnInstalar").addEventListener('click', () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-  }
+document.getElementById('btnInstalar').addEventListener('click', () => {
+  if (deferredPrompt) deferredPrompt.prompt();
 });
 
 // COMPARTIR
@@ -135,7 +140,7 @@ function compartir() {
       url: window.location.href
     });
   } else {
-    alert("Copiá este link y compartilo: " + window.location.href);
+    alert("Copiá este link: " + window.location.href);
   }
 }
 

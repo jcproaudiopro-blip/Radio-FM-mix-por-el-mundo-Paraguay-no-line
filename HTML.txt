@@ -4,138 +4,271 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>FM MIX PARAGUAY</title>
+<title>FM MIX PARAGUAY PRO</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ffcc">
 
 <style>
-body {
-  margin:0;
-  font-family: Arial;
-  color:white;
-  text-align:center;
-  background: url('https://chat.openai.com/mnt/data/0.png') no-repeat center center fixed;
-  background-size: cover;
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(180deg,#000,#111);
+color:white;
+text-align:center;
 }
 
-.overlay {
-  background: rgba(0,0,0,0.7);
-  min-height: 100vh;
-  padding: 20px;
+.header{
+padding:20px;
+font-size:24px;
+font-weight:bold;
 }
 
-h1 {
-  margin-top: 20px;
-  font-size: 28px;
+.boton{
+width:110px;
+height:110px;
+border-radius:50%;
+background:#00ffcc;
+color:black;
+font-size:40px;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:25px auto;
+cursor:pointer;
+box-shadow:0 0 25px #00ffcc;
 }
 
-.play {
-  margin: 30px auto;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 3px solid yellow;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
+/* BOTON INSTALAR */
+.instalar{
+position:fixed;
+top:20px;
+right:20px;
+background:#00ffcc;
+color:black;
+padding:8px 12px;
+border-radius:8px;
+font-size:14px;
+cursor:pointer;
+display:none;
 }
 
-button {
-  padding:12px 20px;
-  margin:10px;
-  border:none;
-  border-radius:10px;
-  background:red;
-  color:white;
-  font-size:16px;
+/* BOTON COMPARTIR */
+.share{
+position:fixed;
+bottom:20px;
+right:20px;
+background:red;
+padding:12px;
+border-radius:50%;
+font-size:20px;
+cursor:pointer;
+box-shadow:0 0 10px red;
 }
 
-.section {
-  margin-top:30px;
-  background: rgba(0,0,0,0.6);
-  padding:15px;
-  border-radius:10px;
+/* info */
+.hora{font-size:22px;}
+.clima{font-size:18px;margin-top:10px;}
+.monedas{margin-top:10px;color:#00ff00;}
+
+/* diarios */
+.diarios{
+margin-top:25px;
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.diarios img{
+width:92%;
+max-width:360px;
+border-radius:15px;
+box-shadow:0 0 20px #000;
+}
+
+.diarios p{
+margin-top:10px;
+font-size:14px;
+color:#ccc;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="overlay">
+<div class="instalar" id="btnInstalar">📲 Instalar</div>
 
-<h1>📻 FM MIX PARAGUAY</h1>
+<div class="header">📻 FM MIX PARAGUAY EN VIVO</div>
 
-<div class="play">▶</div>
+<div class="boton" onclick="toggleRadio()" id="btn">▶</div>
 
-<audio id="radio" autoplay>
-  <source src="https://srv10.streamingradio.ar/8256/;" type="audio/mpeg">
+<audio id="radio" preload="auto">
+<source src="https://srv10.streamingradio.ar/8256/;" type="audio/mpeg">
 </audio>
 
-<br>
+<div class="hora" id="hora"></div>
+<div class="clima" id="clima">Cargando clima...</div>
+<div class="monedas" id="monedas">Cargando monedas...</div>
 
-<button onclick="instalar()">📲 Instalar</button>
-<button onclick="compartir()">🔗 Compartir</button>
+<div class="diarios" id="diarios"></div>
 
-<div class="section">
-<h3>📰 Noticias</h3>
-<p id="noticias">Cargando noticias...</p>
-</div>
-
-<div class="section">
-<h3>💲 Cotización</h3>
-<p id="dolar">Cargando dólar...</p>
-</div>
-
-</div>
+<div class="share" onclick="compartir()">🔗</div>
 
 <script>
-// AUTO PLAY (forzado)
-window.onload = function() {
-  let radio = document.getElementById("radio");
-  radio.play().catch(()=>{});
+
+// PWA INSTALAR
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById("btnInstalar").style.display = "block";
+});
+
+document.getElementById("btnInstalar").addEventListener("click", () => {
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+  }
+});
+
+// SERVICE WORKER
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
 }
 
 // COMPARTIR
-function compartir() {
-  if (navigator.share) {
+function compartir(){
+  if(navigator.share){
     navigator.share({
-      title: 'FM MIX PARAGUAY',
-      text: 'Escuchá la radio en vivo 24/7',
-      url: window.location.href
+      title:'FM MIX PARAGUAY',
+      text:'Escuchá la radio en vivo',
+      url:window.location.href
     });
-  } else {
-    alert("Copiá este link: " + window.location.href);
+  }else{
+    alert("Copiá este link: "+window.location.href);
   }
 }
 
-// INSTALAR
-function instalar() {
-  alert("Para instalar: tocá los 3 puntos del navegador y 'Agregar a pantalla de inicio'");
+// ===== TU CÓDIGO ORIGINAL =====
+
+// ELEMENTOS
+const radio=document.getElementById("radio");
+const btn=document.getElementById("btn");
+const horaEl=document.getElementById("hora");
+const climaEl=document.getElementById("clima");
+const monedasEl=document.getElementById("monedas");
+const diariosEl=document.getElementById("diarios");
+
+let activo=false;
+
+// 🎧 RADIO
+function toggleRadio(){
+if(!activo){
+radio.play().catch(()=>{});
+btn.innerHTML="⏸";
+activo=true;
+}else{
+radio.pause();
+btn.innerHTML="▶";
+activo=false;
+}
 }
 
-// NOTICIAS SIMPLE (RSS)
-fetch('https://api.allorigins.win/raw?url=https://www.abc.com.py/rss/')
-.then(res => res.text())
-.then(data => {
-  let parser = new DOMParser();
-  let xml = parser.parseFromString(data, "text/xml");
-  let items = xml.querySelectorAll("item");
-  let texto = "";
-  items.forEach((el, i) => {
-    if(i < 3){
-      texto += "• " + el.querySelector("title").textContent + "<br>";
-    }
-  });
-  document.getElementById("noticias").innerHTML = texto;
-});
+// 🔁 RECONEXIÓN AUTOMÁTICA
+setInterval(()=>{
+if(activo && radio.paused){
+radio.load();
+radio.play().catch(()=>{});
+}
+},5000);
 
-// DOLAR SIMPLE
-fetch('https://api.exchangerate-api.com/v4/latest/USD')
-.then(res => res.json())
-.then(data => {
-  document.getElementById("dolar").innerHTML = 
-    "USD → ARS: " + data.rates.ARS + "<br>USD → PYG: " + data.rates.PYG;
-});
+// 🕒 HORA
+setInterval(()=>{
+horaEl.innerHTML="🕒 "+new Date().toLocaleTimeString();
+},1000);
+
+// 🌤️ CLIMA
+let ciudades=["Buenos Aires","Asuncion","Madrid"];
+let i=0;
+
+async function clima(){
+try{
+let res=await fetch("https://wttr.in/"+ciudades[i]+"?format=3");
+let data=await res.text();
+climaEl.innerHTML="🌍 "+data;
+i=(i+1)%ciudades.length;
+}catch{
+climaEl.innerHTML="Error clima";
+}
+}
+clima();
+setInterval(clima,20000);
+
+// 💵 MONEDAS
+async function monedas(){
+try{
+let res=await fetch("https://open.er-api.com/v6/latest/USD");
+let data=await res.json();
+
+let ars=data.rates.ARS;
+let pyg=data.rates.PYG;
+let eur=data.rates.EUR;
+
+monedasEl.innerHTML=`
+💵 USD→ARS ${ars.toFixed(2)} 🇦🇷<br>
+💵 USD→PYG ${pyg.toFixed(2)} 🇵🇾<br>
+💱 ARS→PYG ${(pyg/ars).toFixed(2)}<br>
+💶 EUR→ARS ${(ars/eur).toFixed(2)}
+`;
+}catch{
+monedasEl.innerHTML="Error monedas";
+}
+}
+monedas();
+setInterval(monedas,3600000);
+
+// 🗞️ DIARIOS
+let listaDiarios=[
+{
+nombre:"ABC Color Paraguay",
+url:"https://www.abc.com.py",
+img:"https://image.thum.io/get/width/800/https://www.abc.com.py"
+},
+{
+nombre:"Última Hora Paraguay",
+url:"https://www.ultimahora.com",
+img:"https://image.thum.io/get/width/800/https://www.ultimahora.com"
+},
+{
+nombre:"Clarín Argentina",
+url:"https://www.clarin.com",
+img:"https://image.thum.io/get/width/800/https://www.clarin.com"
+},
+{
+nombre:"El País España",
+url:"https://elpais.com",
+img:"https://image.thum.io/get/width/800/https://elpais.com"
+}
+];
+
+let index=0;
+
+function mostrarDiario(){
+let d=listaDiarios[index];
+
+diariosEl.innerHTML=`
+<a href="${d.url}" target="_blank">
+<img src="${d.img}">
+</a>
+<p>🗞️ ${d.nombre}</p>
+`;
+
+index=(index+1)%listaDiarios.length;
+}
+
+mostrarDiario();
+setInterval(mostrarDiario,10000);
+
 </script>
 
 </body>
